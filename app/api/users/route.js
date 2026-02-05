@@ -1,79 +1,129 @@
-import db from "@/lib/db";
+import { sql } from "@/lib/db";
+import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
 
 /* ======================
-   Get – Get user
+   GET – get users
 ====================== */
 export async function GET() {
-  const users = db.prepare("SELECT * FROM users").all();
-  return Response.json({ users });
+  const users = await sql`
+    SELECT * FROM users
+    ORDER BY id DESC
+  `;
+
+  return NextResponse.json({ users });
 }
 
 /* ======================
-   Create – create user
+   POST – create user
 ====================== */
-
 export async function POST(req) {
   try {
     const body = await req.json();
+    const { name, email, address } = body;
 
-    const stmt = db.prepare(
-      "INSERT INTO users (name, email, address) VALUES (?, ?, ?)"
+    if (!name || !email) {
+      return NextResponse.json(
+        { message: "Name and email are required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await sql`
+      INSERT INTO users (name, email, address)
+      VALUES (${name}, ${email}, ${address})
+      RETURNING id, name, email, address
+    `;
+
+    return NextResponse.json(result[0]);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { message: "Failed to create user" },
+      { status: 500 }
     );
-
-    const result = stmt.run(body.name, body.email, body.address);
-
-    return Response.json({
-      id: result.lastInsertRowid,
-      name: body.name,
-      email: body.email,
-      address: body.address,
-    });
-  }
-  catch (err) {
-    console.log(err)
   }
 }
 
 /* ======================
-   UPDATE – update user
+   PUT – update user
 ====================== */
-
 export async function PUT(req) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
+    const { id, name, email, address } = body;
 
-  const stmt = db.prepare(
-    `
-    UPDATE users
-    SET name = ?, email = ?, address = ?
-    WHERE id = ?
-    `
-  );
+    if (!id) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
 
-  stmt.run(
-    body.name,
-    body.email,
-    body.address,
-    body.id
-  );
+    const result = await sql`
+      UPDATE users
+      SET name = ${name},
+          email = ${email},
+          address = ${address}
+      WHERE id = ${id}
+      RETURNING id
+    `;
 
-  return Response.json({
-    message: "User updated successfully",
-  });
+    if (result.length === 0) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: "User updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { message: "Failed to update user" },
+      { status: 500 }
+    );
+  }
 }
 
 /* ======================
    DELETE – delete user
 ====================== */
 export async function DELETE(req) {
-  const { id } = await req.json();
+  try {
+    const { id } = await req.json();
 
-  const stmt = db.prepare(
-    "DELETE FROM users WHERE id = ?"
-  );
+    if (!id) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
 
-  stmt.run(id);
+    const result = await sql`
+      DELETE FROM users
+      WHERE id = ${id}
+      RETURNING id
+    `;
 
-  return Response.json({
-    message: "User deleted successfully",
-  });
+    if (result.length === 0) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: "User deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { message: "Failed to delete user" },
+      { status: 500 }
+    );
+  }
 }

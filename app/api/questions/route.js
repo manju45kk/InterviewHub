@@ -1,19 +1,7 @@
 import { NextResponse } from "next/server";
-import Database from "better-sqlite3";
+import { sql } from "@/lib/db";
 
-const db = new Database("questions.db");
-
-/* ---------- INIT TABLE ---------- */
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS questions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    skill TEXT,
-    concept TEXT,
-    title TEXT,
-    code TEXT,
-    explanation TEXT
-  )
-`).run();
+export const runtime = "nodejs";
 
 /* ================== GET ================== */
 export async function GET(req) {
@@ -23,31 +11,45 @@ export async function GET(req) {
     const skill = searchParams.get("skill");
     const concept = searchParams.get("concept");
 
+    // ---- GET SKILLS ----
     if (type === "skills") {
-      const rows = db.prepare(
-        "SELECT DISTINCT skill FROM questions"
-      ).all();
+      const rows = await sql`
+        SELECT DISTINCT skill FROM questions
+      `;
 
-      return NextResponse.json({ success: true, data: rows.map(r => r.skill) });
+      return NextResponse.json({
+        success: true,
+        data: rows.map(r => r.skill),
+      });
     }
 
+    // ---- GET CONCEPTS ----
     if (type === "concepts" && skill) {
-      const rows = db.prepare(
-        "SELECT DISTINCT concept FROM questions WHERE skill = ?"
-      ).all(skill);
+      const rows = await sql`
+        SELECT DISTINCT concept
+        FROM questions
+        WHERE skill = ${skill}
+      `;
 
-      return NextResponse.json({ success: true, data: rows.map(r => r.concept) });
+      return NextResponse.json({
+        success: true,
+        data: rows.map(r => r.concept),
+      });
     }
 
+    // ---- GET QUESTIONS ----
     if (type === "questions" && skill && concept) {
-      const rows = db.prepare(
-        "SELECT * FROM questions WHERE skill = ? AND concept = ?"
-      ).all(skill, concept);
+      const rows = await sql`
+        SELECT *
+        FROM questions
+        WHERE skill = ${skill}
+          AND concept = ${concept}
+      `;
 
       return NextResponse.json({
         success: true,
         count: rows.length,
-        data: rows
+        data: rows,
       });
     }
 
@@ -68,35 +70,31 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    /* ---- BULK INSERT (ARRAY PAYLOAD) ---- */
+    // ---- BULK INSERT ----
     if (Array.isArray(body)) {
-      const insert = db.prepare(`
-        INSERT INTO questions (skill, concept, title, code, explanation)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-
-      const trx = db.transaction((list) => {
-        list.forEach((q, index) => {
+      await Promise.all(
+        body.map((q, index) => {
           const { skill, concept, title, code, explanation } = q;
 
           if (!skill || !concept || !title || !code || !explanation) {
-            throw new Error(`Missing fields in item at index ${index}`);
+            throw new Error(`Missing fields at index ${index}`);
           }
 
-          insert.run(skill, concept, title, code, explanation);
-        });
-      });
-
-      trx(body);
+          return sql`
+            INSERT INTO questions (skill, concept, title, code, explanation)
+            VALUES (${skill}, ${concept}, ${title}, ${code}, ${explanation})
+          `;
+        })
+      );
 
       return NextResponse.json({
         success: true,
         message: "Bulk insert successful",
-        count: body.length
+        count: body.length,
       });
     }
 
-    /* ---- SINGLE INSERT ---- */
+    // ---- SINGLE INSERT ----
     const { skill, concept, title, code, explanation } = body;
 
     if (!skill || !concept || !title || !code || !explanation) {
@@ -106,14 +104,14 @@ export async function POST(req) {
       );
     }
 
-    db.prepare(`
+    await sql`
       INSERT INTO questions (skill, concept, title, code, explanation)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(skill, concept, title, code, explanation);
+      VALUES (${skill}, ${concept}, ${title}, ${code}, ${explanation})
+    `;
 
     return NextResponse.json({
       success: true,
-      message: "Question added"
+      message: "Question added",
     });
   } catch (err) {
     return NextResponse.json(
@@ -122,7 +120,6 @@ export async function POST(req) {
     );
   }
 }
-
 
 /* ================== PUT (UPDATE) ================== */
 export async function PUT(req) {
@@ -136,13 +133,18 @@ export async function PUT(req) {
       );
     }
 
-    const result = db.prepare(`
+    const result = await sql`
       UPDATE questions
-      SET skill = ?, concept = ?, title = ?, code = ?, explanation = ?
-      WHERE id = ?
-    `).run(skill, concept, title, code, explanation, id);
+      SET skill = ${skill},
+          concept = ${concept},
+          title = ${title},
+          code = ${code},
+          explanation = ${explanation}
+      WHERE id = ${id}
+      RETURNING id
+    `;
 
-    if (result.changes === 0) {
+    if (result.length === 0) {
       return NextResponse.json(
         { success: false, message: "Question not found" },
         { status: 404 }
@@ -151,7 +153,7 @@ export async function PUT(req) {
 
     return NextResponse.json({
       success: true,
-      message: "Question updated"
+      message: "Question updated",
     });
   } catch (err) {
     return NextResponse.json(
@@ -174,11 +176,13 @@ export async function DELETE(req) {
       );
     }
 
-    const result = db.prepare(
-      "DELETE FROM questions WHERE id = ?"
-    ).run(id);
+    const result = await sql`
+      DELETE FROM questions
+      WHERE id = ${id}
+      RETURNING id
+    `;
 
-    if (result.changes === 0) {
+    if (result.length === 0) {
       return NextResponse.json(
         { success: false, message: "Question not found" },
         { status: 404 }
@@ -187,7 +191,7 @@ export async function DELETE(req) {
 
     return NextResponse.json({
       success: true,
-      message: "Question deleted"
+      message: "Question deleted",
     });
   } catch (err) {
     return NextResponse.json(
