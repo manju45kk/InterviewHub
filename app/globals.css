@@ -1,0 +1,159 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* App wrapper */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 16px;
+  gap: 16px;
+  border: 1px solid #f8f3f3;
+  border-radius: 5px;
+}
+
+/* Header */
+.header {
+  border: 1px solid #e0dcdc;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.header-left {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e0dcdc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Main layout */
+.main {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* Sidebar (Desktop) */
+.sidebar {
+  width: 220px;
+  border: 1px solid #e0dcdc;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #000;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.nav-link:hover {
+  background-color: #ded6d6;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  border: 1px solid #e0dcdc;
+  border-radius: 5px;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+/* ===============================
+   📱 Tablet & Mobile
+   =============================== */
+@media (max-width: 1024px) {
+  .main {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px;
+  }
+
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
+    text-align: center;
+  }
+}
+
+/* ===============================
+   📱 Small Mobile
+   =============================== */
+@media (max-width: 640px) {
+  .app {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .header {
+    padding: 8px 12px;
+  }
+
+  .username {
+    display: none;
+  }
+
+  .sidebar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .nav-link {
+    flex: 1;
+    min-width: 80px;
+    font-size: 13px;
+    padding: 6px;
+    text-align: center;
+  }
+
+  .content {
+    padding: 12px;
+  }
+}

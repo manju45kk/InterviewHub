@@ -1,0 +1,51 @@
+/* Skill page wrapper */
+.skill-page {
+  padding: 12px;
+}
+
+/* Grid */
+.skill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Cards */
+.skill-card {
+  flex: 1 1 calc(33.333% - 16px);
+  background: #f5f5f5;
+  padding: 24px;
+  text-align: center;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.skill-card:hover {
+  background: #eee;
+}
+
+/* Footer */
+.skill-footer {
+  margin-top: 16px;
+  text-align: right;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .skill-card {
+    flex: 1 1 calc(50% - 16px);
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .skill-card {
+    flex: 1 1 100%;
+  }
+
+  .skill-footer {
+    text-align: center;
+  }
+}

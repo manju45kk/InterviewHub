@@ -1,0 +1,130 @@
+.app {
+  font-family: "Segoe UI", sans-serif;
+  padding: 12px;
+  background: #f9f9f9;
+}
+
+.app.dark {
+  background: #121212;
+  color: #eee;
+}
+
+/* Question list */
+.question-list {
+  list-style: none;
+  padding: 0;
+}
+
+.question-list li {
+  padding: 14px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.question-list li:hover {
+  background: #f2f2f2;
+}
+
+/* Header */
+.question-details-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  min-height: 260px;
+  font-family: monospace;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+/* Output */
+.output {
+  background: #222;
+  color: #0f0;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+/* Explanation */
+.explanation {
+  background: #333;
+  color: #fff;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+
+/* Footer */
+.question-details-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 10px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* =========================
+   📱 Tablet
+   ========================= */
+@media (max-width: 900px) {
+  .question-details-header {
+    flex-direction: column;
+  }
+
+  textarea {
+    min-height: 220px;
+  }
+}
+
+/* =========================
+   📱 Mobile
+   ========================= */
+@media (max-width: 600px) {
+  .question-details-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  textarea {
+    min-height: 180px;
+  }
+
+  .question-list li {
+    font-size: 14px;
+  }
+}
