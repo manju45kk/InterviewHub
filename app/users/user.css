@@ -1,20 +1,5 @@
-
 /* =========================
-   FORCE VISIBILITY RULES
-========================= */
-
-/* Desktop default */
-.desktop-only {
-  display: table !important;
-}
-
-.mobile-only {
-  display: none !important;
-}
-
-
-/* =========================
-   BASE RESET
+   RESET
 ========================= */
 * {
   box-sizing: border-box;
@@ -23,6 +8,17 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+}
+
+/* =========================
+   FORCE VISIBILITY (DESKTOP DEFAULT)
+========================= */
+.desktop-only {
+  display: table !important;
+}
+
+.mobile-only {
+  display: none !important;
 }
 
 /* =========================
@@ -37,7 +33,6 @@ body {
 
 .table-header button {
   padding: 8px 14px;
-  cursor: pointer;
 }
 
 /* =========================
@@ -54,12 +49,8 @@ body {
   padding: 8px;
 }
 
-.user-form button {
-  padding: 8px 14px;
-}
-
 /* =========================
-   DESKTOP TABLE
+   TABLE
 ========================= */
 .user-table {
   width: 100%;
@@ -70,35 +61,18 @@ body {
 .user-table td {
   border: 1px solid #ddd;
   padding: 10px;
-  text-align: left;
 }
 
 .user-table th {
-  background-color: #f5f5f5;
+  background: #f5f5f5;
 }
 
 .text-center {
   text-align: center;
 }
 
-.user-table button {
-  margin-right: 6px;
-  padding: 6px 12px;
-}
-
 /* =========================
-   VISIBILITY CONTROL
-========================= */
-.desktop-only {
-  display: block;
-}
-
-.mobile-only {
-  display: none;
-}
-
-/* =========================
-   MOBILE CARD LAYOUT
+   MOBILE CARDS
 ========================= */
 .user-cards {
   display: flex;
@@ -110,41 +84,12 @@ body {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 14px;
-  background: #fff;
-}
-
-.user-card .row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.user-card .row span {
-  color: #666;
-  font-size: 13px;
-}
-
-.user-card .row strong {
-  font-size: 14px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.card-actions button {
-  flex: 1;
-  padding: 8px;
-  cursor: pointer;
 }
 
 /* =========================
    MOBILE BREAKPOINT
 ========================= */
 @media (max-width: 768px) {
-  /* SWITCH LAYOUT */
   .desktop-only {
     display: none !important;
   }
@@ -153,15 +98,12 @@ body {
     display: block !important;
   }
 
-  /* FORM STACK */
   .user-form {
     flex-direction: column;
   }
 
-  /* HEADER STACK */
   .table-header {
     flex-direction: column;
-    align-items: stretch;
     gap: 10px;
   }
 
