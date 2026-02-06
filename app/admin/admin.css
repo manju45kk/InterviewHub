@@ -1,76 +1,118 @@
+/* =========================
+   Form Wrapper
+========================= */
 .form-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
+/* =========================
+   Form Container (Card)
+========================= */
 .form-container {
   width: 100%;
-  max-width: 1200px;
-  border-radius: 8px;
+  max-width: 1100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  transition: background 0.3s ease, border 0.3s ease;
 }
 
+/* =========================
+   Title
+========================= */
 .form-title {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 10px;
+  color: var(--text);
+  margin-bottom: 6px;
 }
 
-.input {
-  height: 40px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.textarea {
+/* =========================
+   Inputs / Select / Textarea
+========================= */
+.input,
+.textarea,
+select {
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
   padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  resize: vertical;
   font-size: 14px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--muted-text);
+}
+
+.input:focus,
+.textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--btn-bg);
+  box-shadow: 0 0 0 2px rgba(31, 41, 55, 0.25);
+}
+
+/* Code textarea */
 .code-area {
   min-height: 260px;
   font-family: monospace;
 }
 
+/* =========================
+   Button Row
+========================= */
 .button-row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
+/* =========================
+   File Input
+========================= */
+input[type="file"] {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px dashed var(--border);
+  border-radius: 5px;
+  padding: 10px;
   cursor: pointer;
-  font-size: 14px;
 }
 
-.add-btn {
-  background-color: #2563eb;
-  color: #fff;
+/* =========================
+   Section Divider (Optional)
+========================= */
+.form-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0;
 }
 
-.add-btn:hover {
-  background-color: #1e40af;
-}
+/* =========================
+   Mobile
+========================= */
+@media (max-width: 640px) {
+  .form-container {
+    padding: 16px;
+  }
 
-.cancel-btn {
-  background-color: #dc2626;
-  color: #fff;
-}
+  .button-row {
+    flex-direction: column;
+  }
 
-.cancel-btn:hover {
-  background-color: #991b1b;
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

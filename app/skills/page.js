@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import "./skills.css";
-import { CodePlayground } from "./CodePlayground";
+import  {CodePlayground}  from "./CodePlayground";
 
 export default function Skill() {
   const [page, setPage] = useState("skills");
@@ -64,7 +64,8 @@ export default function Skill() {
   /* ---------- Concepts List ---------- */
   const ConceptsList = () => (
     <div className="skill-page">
-      <h2>{selectedSkill} Concepts</h2>
+
+      <h2 style={{paddingBottom:'10px'}}>{selectedSkill} Concepts</h2>
 
       <div className="skill-container">
         {concepts.map((concept) => (

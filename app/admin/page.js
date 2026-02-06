@@ -3,14 +3,16 @@ import React, { useState } from "react";
 import "./admin.css";
 
 const SKILLS_DATA = {
-  JavaScript: ["Closure", "Functions", "Strings", "Arrays", "Hoisting"],
-  React: ["Hooks", "State", "Props", "Lifecycle"],
-  CSS: ["Flexbox", "Grid", "Positioning"],
+  JavaScript: ["Closure", "Functions", "Arrays", "Promises"],
+  React: ["Hooks", "State", "Props"],
+  CSS: ["Flexbox", "Grid"],
 };
 
-export default function AddQuestion({ onCancel }) {
-  const [mode, setMode] = useState("single"); // single | bulk
+export default function AddQuestion() {
+  const [section, setSection] = useState("home");
+  // home | questions | single | bulk | simple
 
+  /* ---------------- COMMON FORM STATE ---------------- */
   const [form, setForm] = useState({
     skill: "",
     concept: "",
@@ -23,11 +25,20 @@ export default function AddQuestion({ onCancel }) {
 
   const concepts = form.skill ? SKILLS_DATA[form.skill] : [];
 
-  // ---------------- SINGLE SAVE ----------------
-  const handleAdd = async () => {
+  const resetForm = () =>
+    setForm({
+      skill: "",
+      concept: "",
+      title: "",
+      code: "",
+      explanation: "",
+    });
+
+  /* ---------------- SINGLE QUESTION ---------------- */
+  const handleSingleSave = async () => {
     const { skill, concept, title, code, explanation } = form;
     if (!skill || !concept || !title || !code || !explanation) {
-      alert("Please fill all fields");
+      alert("All fields are mandatory");
       return;
     }
 
@@ -38,21 +49,14 @@ export default function AddQuestion({ onCancel }) {
     });
 
     alert("Question saved");
-
-    setForm({
-      skill: "",
-      concept: "",
-      title: "",
-      code: "",
-      explanation: "",
-    });
+    resetForm();
+    setSection("questions");
   };
 
-  // ---------------- BULK SAVE ----------------
+  /* ---------------- BULK QUESTIONS ---------------- */
   const handleBulkSave = async () => {
     try {
       const data = JSON.parse(jsonText);
-
       if (!Array.isArray(data)) {
         alert("JSON must be an array");
         return;
@@ -61,152 +65,149 @@ export default function AddQuestion({ onCancel }) {
       const res = await fetch("/api/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data) // ✅ raw array
+        body: JSON.stringify(data),
       });
 
-      const result = await res.json();
-
-      if (!res.ok) {
-        alert(result.message || "Bulk save failed");
-        return;
-      }
-
-      alert(`Saved ${result.count} questions`);
+      if (!res.ok) throw new Error();
+      alert("Bulk questions saved");
       setJsonText("");
-      setMode("single");
-    } catch (err) {
+      setSection("questions");
+    } catch {
       alert("Invalid JSON");
     }
   };
 
+  /* ---------------- SIMPLE QUESTION + ANSWER ---------------- */
+  const handleSimpleSave = async () => {
+    const { skill, concept, title, explanation } = form;
 
+    if (!skill || !concept || !title || !explanation) {
+      alert("All fields are mandatory");
+      return;
+    }
+
+    await fetch("/api/questions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        skill,
+        concept,
+        title,
+        explanation,
+        isSingleQuestionAnswer: true,
+      }),
+    });
+
+    alert("Simple question saved");
+    resetForm();
+    setSection("questions");
+  };
+
+  /* ================= UI ================= */
   return (
     <div className="form-container">
-      {/* ================= SINGLE FORM ================= */}
-      {mode === "single" && (
+
+      {/* ================= HOME ================= */}
+      {section === "home" && (
         <>
-          <h2 className="form-title">Add New Question</h2>
+          <h2 className="form-title">Admin Panel</h2>
+          <button className="btn" onClick={() => setSection("questions")}>Questions</button>
+          <button className="btn" disabled>Users</button>
+          <button className="btn" disabled>Roles</button>
 
-          <select
-            className="input"
-            value={form.skill}
-            onChange={(e) =>
-              setForm({ ...form, skill: e.target.value, concept: "" })
-            }
-          >
+        </>
+      )}
+
+      {/* ================= QUESTIONS MENU ================= */}
+      {section === "questions" && (
+        <>
+          <h2 className="form-title">Questions</h2>
+          <button className="btn" onClick={() => setSection("single")}>➕ Add Single Question</button>
+          <button className="btn" onClick={() => setSection("bulk")}>⬆ Add Bulk Questions</button>
+          <button className="btn" onClick={() => setSection("simple")}>✍ Add Simple Q&A</button>
+          <button className="btn cancel-btn" onClick={() => setSection("home")}>← Back</button>
+        </>
+      )}
+
+      {/* ================= SINGLE FORM ================= */}
+      {section === "single" && (
+        <>
+          <h2 className="form-title">Add Single Question</h2>
+
+          <select className="input" value={form.skill}
+            onChange={(e) => setForm({ ...form, skill: e.target.value, concept: "" })}>
             <option value="">Select Skill</option>
-            {Object.keys(SKILLS_DATA).map((skill) => (
-              <option key={skill} value={skill}>
-                {skill}
-              </option>
-            ))}
+            {Object.keys(SKILLS_DATA).map(s => <option key={s}>{s}</option>)}
           </select>
 
-          <select
-            className="input"
-            value={form.concept}
+          <select className="input" value={form.concept}
             disabled={!form.skill}
-            onChange={(e) =>
-              setForm({ ...form, concept: e.target.value })
-            }
-          >
+            onChange={(e) => setForm({ ...form, concept: e.target.value })}>
             <option value="">Select Concept</option>
-            {concepts.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+            {concepts.map(c => <option key={c}>{c}</option>)}
           </select>
 
-          <input
-            type="text"
-            placeholder="Question Title"
-            className="input"
+          <input className="input" placeholder="Title"
             value={form.title}
-            onChange={(e) =>
-              setForm({ ...form, title: e.target.value })
-            }
-          />
+            onChange={(e) => setForm({ ...form, title: e.target.value })} />
 
-          <textarea
-            placeholder="Code Snippet"
-            className="textarea code-area"
+          <textarea className="textarea code-area" placeholder="Code"
             value={form.code}
-            onChange={(e) =>
-              setForm({ ...form, code: e.target.value })
-            }
-          />
+            onChange={(e) => setForm({ ...form, code: e.target.value })} />
 
-          <textarea
-            placeholder="Explanation"
-            className="textarea"
+          <textarea className="textarea" placeholder="Explanation"
             value={form.explanation}
-            onChange={(e) =>
-              setForm({ ...form, explanation: e.target.value })
-            }
-          />
+            onChange={(e) => setForm({ ...form, explanation: e.target.value })} />
 
           <div className="button-row">
-            <button className="btn add-btn" onClick={handleAdd}>
-              + Save Question
-            </button>
-
-            <button
-              className="btn"
-              onClick={() => setMode("bulk")}
-            >
-              ⬆ Upload JSON (Questions)
-            </button>
-
-            <button className="btn cancel-btn" onClick={onCancel}>
-              ✖ Cancel
-            </button>
+            <button className="btn add-btn" onClick={handleSingleSave}>Save</button>
+            <button className="btn cancel-btn" onClick={() => setSection("questions")}>← Back</button>
           </div>
         </>
       )}
 
-      {/* ================= BULK UPLOAD ================= */}
-      {mode === "bulk" && (
+      {/* ================= BULK ================= */}
+      {section === "bulk" && (
         <>
-          <h2 className="form-title">Upload Questions (JSON)</h2>
+          <h2 className="form-title">Bulk Questions Upload</h2>
+          <textarea className="textarea" value={jsonText}
+            onChange={(e) => setJsonText(e.target.value)} />
+          <div className="button-row">
+            <button className="btn add-btn" onClick={handleBulkSave}>Save Questions</button>
+            <button className="btn cancel-btn" onClick={() => setSection("questions")}>← Back</button>
+          </div>
+        </>
+      )}
 
-          <textarea
-            className="textarea"
-            placeholder="Paste JSON array here"
-            value={jsonText}
-            onChange={(e) => setJsonText(e.target.value)}
-          />
+      {/* ================= SIMPLE Q&A ================= */}
+      {section === "simple" && (
+        <>
+          <h2 className="form-title">Add Simple Question & Answer</h2>
 
-          <input
-            type="file"
-            accept=".json"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = (ev) =>
-                setJsonText(ev.target.result);
-              reader.readAsText(file);
-            }}
-          />
+          <select className="input" value={form.skill}
+            onChange={(e) => setForm({ ...form, skill: e.target.value, concept: "" })}>
+            <option value="">Select Skill</option>
+            {Object.keys(SKILLS_DATA).map(s => <option key={s}>{s}</option>)}
+          </select>
+
+          <select className="input" value={form.concept}
+            disabled={!form.skill}
+            onChange={(e) => setForm({ ...form, concept: e.target.value })}>
+            <option value="">Select Concept</option>
+            {concepts.map(c => <option key={c}>{c}</option>)}
+          </select>
+
+          <input className="input" placeholder="Question Title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })} />
+
+          <textarea className="textarea" placeholder="Answer"
+            value={form.explanation}
+            onChange={(e) => setForm({ ...form, explanation: e.target.value })} />
 
           <div className="button-row">
-            <button
-              className="btn add-btn"
-              onClick={handleBulkSave}
-            >
-              ✔ Save All
-            </button>
-
-            <button
-              className="btn cancel-btn"
-              onClick={() => {
-                setJsonText("");
-                setMode("single");
-              }}
-            >
-              ⬅ Back
-            </button>
+            <button className="btn add-btn" onClick={handleSimpleSave}>Save</button>
+            <button className="btn cancel-btn" onClick={() => setSection("questions")}>← Back</button>
           </div>
         </>
       )}

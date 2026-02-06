@@ -1,63 +1,126 @@
+/* =========================
+   RESET
+========================= */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* =========================
+   THEME VARIABLES (GLOBAL)
+========================= */
+:root {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --border: #e0dcdc;
+  --text: #222222;
+  --muted-text: #555555;
+  --hover: #ded6d6;
+
+  --header-bg: #1f2937;
+  --header-text: #ffffff;
+
+  --input-bg: #ffffff;
+  --input-border: #cccccc;
+
+  --btn-bg: #1f2937;
+  --btn-text: #ffffff;
+  --btn-cancel-text: #ffffff;
+  --btn-cancel-background: #f42525;
+}
+
+body.dark {
+  --bg: #121212;
+  --surface: #181818;
+  --border: #333333;
+  --text: #838598;
+  --muted-text: #aaaaaa;
+  --hover: #2a2a2a;
+
+  --header-bg: #1f2937;
+  --header-text:#838598;
+
+  --input-bg: #1e1e1e;
+  --input-border: #444444;
+
+  --btn-bg: #374151;
+  --btn-text: #838598;
+  --btn-cancel-text: #ffffff;
+  --btn-cancel-background: #9e3535;
+}
+
+/* =========================
+   BASE
+========================= */
 body {
   height: 100vh;
   font-family: Arial, sans-serif;
   overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-/* App wrapper */
+/* =========================
+   APP
+========================= */
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
   padding: 16px;
   gap: 16px;
-  border: 1px solid #f8f3f3;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 5px;
 }
 
-/* Header */
+/* =========================
+   HEADER
+========================= */
 .header {
-  border: 1px solid #e0dcdc;
-  border-radius: 5px;
+  height: 60px;
+  background: var(--header-bg);
+  color: var(--header-text);
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  align-items: center;
+  padding: 0 16px;
 }
 
 .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 20px;
   font-weight: bold;
+}
+
+.menu-icon {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.theme-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--header-text);
 }
 
 .profile-circle {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid #e0dcdc;
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,10 +129,11 @@ body {
 
 .username {
   font-size: 14px;
-  font-weight: 500;
 }
 
-/* Main layout */
+/* =========================
+   MAIN
+========================= */
 .main {
   display: flex;
   flex: 1;
@@ -77,94 +141,163 @@ body {
   min-height: 0;
 }
 
-/* Sidebar (Desktop) */
+/* =========================
+   SIDEBAR
+========================= */
 .sidebar {
   width: 220px;
-  border: 1px solid #e0dcdc;
-  border-radius: 5px;
   padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
 }
 
 .nav-link {
   text-decoration: none;
-  color: #000;
+  color: var(--text);
   padding: 10px;
   border-radius: 8px;
-  text-align: left;
 }
 
 .nav-link:hover {
-  background-color: #ded6d6;
+  background: var(--hover);
 }
 
-/* Content */
+/* =========================
+   CONTENT
+========================= */
 .content {
   flex: 1;
-  border: 1px solid #e0dcdc;
-  border-radius: 5px;
   padding: 20px;
   overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 0;
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
-/* ===============================
-   📱 Tablet & Mobile
-   =============================== */
-@media (max-width: 1024px) {
-  .main {
-    flex-direction: column;
+/* =========================
+   GLOBAL FORM ELEMENTS
+========================= */
+input,
+textarea,
+select {
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-text);
+}
+
+button {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* =========================
+   TABLES / LISTS (AUTO THEME)
+========================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid var(--border);
+}
+
+tr:hover {
+  background: var(--hover);
+}
+
+
+/* =========================
+   Buttons
+========================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background: var(--hover);
+  color: var(--text);
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Primary Button */
+.add-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+
+.add-btn:hover {
+  opacity: 0.9;
+}
+
+/* Cancel / Danger */
+.cancel-btn {
+  background: var(--btn-cancel-background);
+  color: var(--btn-cancel-text)
+}
+
+.cancel-btn:hover {
+  background: var(--btn-cancel-background);
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+  .menu-icon {
+    display: inline-block;
   }
 
   .sidebar {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    padding: 8px;
+    position: fixed;
+    top: 60px;
+    left: -100%;
+    height: calc(100vh - 60px);
+    transition: left 0.3s ease;
+    z-index: 1000;
   }
 
-  .nav-link {
-    padding: 8px 12px;
-    font-size: 14px;
-    text-align: center;
+  .sidebar.open {
+    left: 0;
   }
 }
 
-/* ===============================
-   📱 Small Mobile
-   =============================== */
 @media (max-width: 640px) {
-  .app {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .header {
-    padding: 8px 12px;
-  }
-
   .username {
     display: none;
   }
-
-  .sidebar {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .nav-link {
-    flex: 1;
-    min-width: 80px;
-    font-size: 13px;
-    padding: 6px;
-    text-align: center;
-  }
-
-  .content {
-    padding: 12px;
-  }
 }
+
+
+

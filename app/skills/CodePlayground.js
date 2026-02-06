@@ -1,41 +1,76 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./CodePlayground.css";
 
-export function CodePlayground({ questionsList, onBackToConcept }) {
-  const [questions, setQuestions] = useState([]);
+/* ======================
+   Utils
+====================== */
+const isEmpty = (v) =>
+  v === null ||
+  v === undefined ||
+  (typeof v === "string" && v.trim() === "");
+
+export function CodePlayground({ questionsList = [], onBackToConcept }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [output, setOutput] = useState("");
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [expandedMap, setExpandedMap] = useState({});
 
-  useEffect(() => {
-    if (questionsList) setQuestions(questionsList);
-  }, [questionsList]);
-
-  const runCode = (code) => {
-    let logs = "";
-    const originalLog = console.log;
-    try {
-      console.log = (...args) => (logs += args.join(" ") + "\n");
-      new Function(code)();
-      setOutput(logs || "✅ Code executed with no output.");
-    } catch (e) {
-      setOutput("❌ Error: " + e.message);
-    } finally {
-      console.log = originalLog;
-    }
+  /* ======================
+     Toggle panel (NO EFFECTS)
+  ====================== */
+  const togglePanel = (index) => {
+    setExpandedMap((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
+  /* ======================
+     LIST VIEW
+  ====================== */
   if (selectedIndex === null) {
     return (
-      <div className={dark ? "app dark" : "app"}>
+      <div className="app">
         <ul className="question-list">
-          {questions.map((ex, i) => (
-            <li key={i} onClick={() => setSelectedIndex(i)}>
-              <strong>Q{i + 1}:</strong> {ex.title}
-            </li>
-          ))}
+          {questionsList.map((q, index) => {
+            if (!q) return null;
+
+            const isSingle = q.isSingleQuestionAnswer === true;
+            const isExpanded = !!expandedMap[index];
+
+            return (
+              <li key={index} className="question-item">
+                {/* QUESTION TITLE → DETAILS PAGE */}
+                <div
+                  className="question-title"
+                  onClick={() => setSelectedIndex(index)}
+                >
+                  <strong>Q{index + 1}:</strong>{" "}
+                  {q.title || "Untitled Question"}
+                </div>
+
+                {/* PANEL TOGGLE */}
+                {isSingle && !isEmpty(q.explanation) && (
+                  <button
+                    type="button"
+                    className="btn btn-link"
+                    onClick={(e) => {
+                      e.stopPropagation(); // 🚨 critical
+                      togglePanel(index);
+                    }}
+                  >
+                    {isExpanded ? "Hide Answer" : "Show Answer"}
+                  </button>
+                )}
+
+                {/* PANEL CONTENT */}
+                {isSingle && isExpanded && (
+                  <div className="panel-answer">
+                    {q.explanation}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
 
         <div className="footer-actions">
@@ -47,58 +82,43 @@ export function CodePlayground({ questionsList, onBackToConcept }) {
     );
   }
 
-  const ex = questions[selectedIndex];
+  /* ======================
+     DETAILS VIEW
+  ====================== */
+  const q = questionsList[selectedIndex];
+
+  if (!q) return null;
 
   return (
-    <div className={dark ? "app dark" : "app"}>
-      {/* Header */}
+    <div className="app">
       <div className="question-details-header">
         <h3>
-          Q{selectedIndex + 1}: {ex.title}
+          Q{selectedIndex + 1}: {q.title}
         </h3>
-
-        <div className="action-buttons">
-          <button className="btn" onClick={() => runCode(ex.code)}>Run</button>
-          <button className="btn" onClick={() => setShowExplanation(!showExplanation)}>
-            {showExplanation ? "Hide" : "Show"} Explanation
-          </button>
-          <button className="btn" onClick={() => setQuestions([...questionsList])}>
-            🔄 Refresh
-          </button>
-        </div>
       </div>
 
-      <textarea
-        value={ex.code}
-        onChange={(e) => {
-          const updated = [...questions];
-          updated[selectedIndex].code = e.target.value;
-          setQuestions(updated);
-        }}
-      />
-
-      {output && <pre className="output">{output}</pre>}
-      {showExplanation && <div className="explanation">{ex.explanation}</div>}
-
-      {/* Footer */}
-      <div className="question-details-footer">
-        <div className="nav-buttons">
-          <button
-            className="btn"
-            disabled={selectedIndex === 0}
-            onClick={() => setSelectedIndex(selectedIndex - 1)}
-          >
-            ⬅ Previous
-          </button>
-
-          <button
-            className="btn"
-            disabled={selectedIndex === questions.length - 1}
-            onClick={() => setSelectedIndex(selectedIndex + 1)}
-          >
-            Next ➡
-          </button>
+      {!isEmpty(q.explanation) && (
+        <div className="explanation">
+          {q.explanation}
         </div>
+      )}
+
+      <div className="question-details-footer">
+        <button
+          className="btn"
+          disabled={selectedIndex === 0}
+          onClick={() => setSelectedIndex((i) => i - 1)}
+        >
+          ⬅ Previous
+        </button>
+
+        <button
+          className="btn"
+          disabled={selectedIndex === questionsList.length - 1}
+          onClick={() => setSelectedIndex((i) => i + 1)}
+        >
+          Next ➡
+        </button>
 
         <button className="btn" onClick={() => setSelectedIndex(null)}>
           Back

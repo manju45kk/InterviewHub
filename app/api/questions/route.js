@@ -97,7 +97,7 @@ export async function POST(req) {
     // ---- SINGLE INSERT ----
     const { skill, concept, title, code, explanation } = body;
 
-    if (!skill || !concept || !title || !code || !explanation) {
+    if (!skill || !concept || !title || !explanation) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
