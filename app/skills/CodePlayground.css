@@ -73,7 +73,7 @@ textarea::placeholder {
 ========================= */
 .explanation {
   background: var(--surface);
-  color: var(--text);
+  color: #22c55e;
   padding: 10px;
   margin-top: 10px;
   border-radius: 6px;

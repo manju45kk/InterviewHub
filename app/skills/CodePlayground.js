@@ -92,18 +92,7 @@ export function CodePlayground({ questionsList }) {
           Q{selectedIndex + 1}: {ex.title}
         </h3>
 
-        <div className="action-buttons">
-          {hasCode && (
-            <button className="btn" onClick={() => runCode(ex.code)}>
-              Run
-            </button>
-          )}
 
-          {hasCode && <button className="btn" onClick={() => setShowExplanation(!showExplanation)}>
-            {showExplanation ? "Hide Answer" : "Show Answer"}
-          </button>}
-
-        </div>
       </div>
 
       {hasCode &&
@@ -139,7 +128,19 @@ export function CodePlayground({ questionsList }) {
             Next ➡
           </button>
         </div>
+        <div className="action-buttons">
+          {hasCode && <button className="btn" onClick={() => setShowExplanation(!showExplanation)}>
+            {showExplanation ? "Hide Explanation" : "Show Explanation"}
+          </button>}
 
+          {hasCode && (
+            <button className="btn" onClick={() => runCode(ex.code)}>
+              Run Code
+            </button>
+          )}
+
+
+        </div>
 
       </div>
     </div>
