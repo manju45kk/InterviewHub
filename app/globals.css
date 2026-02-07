@@ -48,6 +48,7 @@ body.dark {
   --btn-text: #838598;
   --btn-cancel-text: #ffffff;
   --btn-cancel-background: #9e3535;
+  
 }
 
 /* =========================
@@ -236,10 +237,10 @@ tr:hover {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
+  gap: 5px;
+  padding: 5px 10px;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   border: none;
   background: var(--hover);

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import "./admin.css";
+import { createQuestion, createBulkQuestions } from "../../services/question.service"
 
 const SKILLS_DATA = {
   JavaScript: ["Closure", "Functions", "Arrays", "Promises"],
@@ -36,7 +37,8 @@ export default function AddQuestion() {
 
   /* ---------------- SINGLE QUESTION ---------------- */
   const handleSingleSave = async () => {
-    const { skill, concept, title, code, explanation } = form;
+
+    const { skill, concept, title, code, explanation, } = form;
     if (!skill || !concept || !title || !code || !explanation) {
       alert("All fields are mandatory");
       return;
@@ -61,47 +63,33 @@ export default function AddQuestion() {
         alert("JSON must be an array");
         return;
       }
-
-      const res = await fetch("/api/questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error();
-      alert("Bulk questions saved");
+      await createBulkQuestions(data);
+      resetForm();
       setJsonText("");
       setSection("questions");
-    } catch {
+    } catch (err) {
       alert("Invalid JSON");
     }
   };
 
   /* ---------------- SIMPLE QUESTION + ANSWER ---------------- */
   const handleSimpleSave = async () => {
-    const { skill, concept, title, explanation } = form;
-
-    if (!skill || !concept || !title || !explanation) {
-      alert("All fields are mandatory");
-      return;
-    }
-
-    await fetch("/api/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const { skill, concept, title, explanation, } = form;
+    try {
+      await createQuestion({
         skill,
         concept,
         title,
         explanation,
-        isSingleQuestionAnswer: true,
-      }),
-    });
+        issinglequestionanswer: true,
+      });
+      resetForm();
+      setSection("questions");
+    } finally {
 
-    alert("Simple question saved");
-    resetForm();
-    setSection("questions");
+    }
   };
+
 
   /* ================= UI ================= */
   return (

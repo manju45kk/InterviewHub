@@ -74,15 +74,15 @@ export async function POST(req) {
     if (Array.isArray(body)) {
       await Promise.all(
         body.map((q, index) => {
-          const { skill, concept, title, code, explanation } = q;
+          const { skill, concept, title, code, explanation, issinglequestionanswer } = q;
 
-          if (!skill || !concept || !title || !code || !explanation) {
+          if (!skill || !concept || !title || !explanation) {
             throw new Error(`Missing fields at index ${index}`);
           }
 
           return sql`
-            INSERT INTO questions (skill, concept, title, code, explanation)
-            VALUES (${skill}, ${concept}, ${title}, ${code}, ${explanation})
+            INSERT INTO questions (skill, concept, title, code, explanation, issinglequestionanswer)
+            VALUES (${skill}, ${concept}, ${title}, ${code}, ${explanation}, ${issinglequestionanswer})
           `;
         })
       );
@@ -95,7 +95,7 @@ export async function POST(req) {
     }
 
     // ---- SINGLE INSERT ----
-    const { skill, concept, title, code, explanation } = body;
+    const { skill, concept, title, code, explanation, issinglequestionanswer } = body;
 
     if (!skill || !concept || !title || !explanation) {
       return NextResponse.json(
@@ -105,8 +105,8 @@ export async function POST(req) {
     }
 
     await sql`
-      INSERT INTO questions (skill, concept, title, code, explanation)
-      VALUES (${skill}, ${concept}, ${title}, ${code}, ${explanation})
+      INSERT INTO questions (skill, concept, title, code, explanation, issinglequestionanswer )
+      VALUES (${skill}, ${concept}, ${title}, ${code}, ${explanation}, ${issinglequestionanswer})
     `;
 
     return NextResponse.json({

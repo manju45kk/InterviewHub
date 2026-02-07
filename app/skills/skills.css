@@ -2,7 +2,6 @@
    Skill Page Wrapper
 ========================= */
 .skill-page {
-  padding: 12px;
   background: transparent;
 }
 
@@ -19,12 +18,15 @@
    Cards
 ========================= */
 .skill-card {
-  flex: 1 1 calc(33.333% - 16px);
+  /* flex: 1 1 calc(33.333% - 16px); */
   background: var(--surface);
   color: var(--text);
-  padding: 24px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   text-align: center;
-  border-radius: 12px;
+  border-radius: 5px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border);
@@ -41,9 +43,14 @@
    Footer
 ========================= */
 .skill-footer {
-  margin-top: 16px;
-  text-align: right;
+ text-align: right;
   color: var(--muted-text);
+  padding-bottom: 10px;
+  padding-left: 1px;
+}
+
+.breadcrumb-container{
+  padding-bottom: 10px;
 }
 
 /* =========================

@@ -1,129 +1,148 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CodePlayground.css";
 
-/* ======================
-   Utils
-====================== */
-const isEmpty = (v) =>
-  v === null ||
-  v === undefined ||
-  (typeof v === "string" && v.trim() === "");
-
-export function CodePlayground({ questionsList = [], onBackToConcept }) {
+export function CodePlayground({ questionsList }) {
+  const [questions, setQuestions] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [expandedMap, setExpandedMap] = useState({});
+  const [output, setOutput] = useState("");
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [shownAnswersMap, setShownAnswersMap] = useState({});
 
-  /* ======================
-     Toggle panel (NO EFFECTS)
-  ====================== */
-  const togglePanel = (index) => {
-    setExpandedMap((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
+  useEffect(() => {
+    if (questionsList) setQuestions(questionsList);
+  }, [questionsList]);
+
+  useEffect(() => {
+    if (selectedIndex === null) return;
+    const ex = questions[selectedIndex];
+    if (!ex) return;
+    const isSingle = !!ex.issinglequestionanswer;
+    const hasCode = ex.code != null && String(ex.code).trim() !== "";
+    if (isSingle && !hasCode) setShowExplanation(true);
+    else setShowExplanation(false);
+  }, [selectedIndex, questions]);
+
+  const runCode = (code) => {
+    let logs = "";
+    const originalLog = console.log;
+    try {
+      console.log = (...args) => (logs += args.join(" ") + "\n");
+      new Function(code)();
+      setOutput(logs || "✅ Code executed with no output.");
+    } catch (e) {
+      setOutput("❌ Error: " + e.message);
+    } finally {
+      console.log = originalLog;
+    }
   };
 
-  /* ======================
-     LIST VIEW
-  ====================== */
   if (selectedIndex === null) {
     return (
-      <div className="app">
+      <div>
         <ul className="question-list">
-          {questionsList.map((q, index) => {
-            if (!q) return null;
-
-            const isSingle = q.isSingleQuestionAnswer === true;
-            const isExpanded = !!expandedMap[index];
-
-            return (
-              <li key={index} className="question-item">
-                {/* QUESTION TITLE → DETAILS PAGE */}
-                <div
-                  className="question-title"
-                  onClick={() => setSelectedIndex(index)}
-                >
-                  <strong>Q{index + 1}:</strong>{" "}
-                  {q.title || "Untitled Question"}
+          {questions.map((ex, i) => (
+            <li key={i} onClick={() => setSelectedIndex(i)}>
+              <div className="question-list-row">
+                <div className="question-list-main">
+                  <strong>Q{i + 1}:</strong> {ex.title}
                 </div>
 
-                {/* PANEL TOGGLE */}
-                {isSingle && !isEmpty(q.explanation) && (
-                  <button
-                    type="button"
-                    className="btn btn-link"
-                    onClick={(e) => {
-                      e.stopPropagation(); // 🚨 critical
-                      togglePanel(index);
-                    }}
-                  >
-                    {isExpanded ? "Hide Answer" : "Show Answer"}
-                  </button>
-                )}
-
-                {/* PANEL CONTENT */}
-                {isSingle && isExpanded && (
-                  <div className="panel-answer">
-                    {q.explanation}
+                {ex.issinglequestionanswer && (
+                  <div className="question-list-action">
+                    <button
+                      className={`answer-link ${shownAnswersMap[i] ? "active" : ""
+                        }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShownAnswersMap((m) => ({ ...m, [i]: !m[i] }));
+                      }}
+                    >
+                      {shownAnswersMap[i] ? "Hide Answer" : "Show Answer"}
+                    </button>
                   </div>
                 )}
-              </li>
-            );
-          })}
-        </ul>
+              </div>
 
-        <div className="footer-actions">
-          <button className="btn" onClick={onBackToConcept}>
-            ⬅ Back
-          </button>
-        </div>
+              {ex.issinglequestionanswer && shownAnswersMap[i] && (
+                <div className="inline-explanation">
+                  {ex.explanation}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
+
     );
   }
 
-  /* ======================
-     DETAILS VIEW
-  ====================== */
-  const q = questionsList[selectedIndex];
+  const ex = questions[selectedIndex];
+  const isSingle = !!ex.issinglequestionanswer;
 
-  if (!q) return null;
+  const hasCode = ex.code != null && String(ex.code).trim() !== "";
+
+  console.log("hasCode", hasCode)
 
   return (
-    <div className="app">
+    <div>
+      {/* Header */}
       <div className="question-details-header">
         <h3>
-          Q{selectedIndex + 1}: {q.title}
+          Q{selectedIndex + 1}: {ex.title}
         </h3>
+
+        <div className="action-buttons">
+          {hasCode && (
+            <button className="btn" onClick={() => runCode(ex.code)}>
+              Run
+            </button>
+          )}
+
+          {hasCode && <button className="btn" onClick={() => setShowExplanation(!showExplanation)}>
+            {showExplanation ? "Hide Answer" : "Show Answer"}
+          </button>}
+
+        </div>
       </div>
 
-      {!isEmpty(q.explanation) && (
-        <div className="explanation">
-          {q.explanation}
-        </div>
-      )}
+      {hasCode &&
+        <textarea
+          value={ex.code}
+          onChange={(e) => {
+            const updated = [...questions];
+            updated[selectedIndex].code = e.target.value;
+            setQuestions(updated);
+          }}
+        />
+      }
 
+      {output && <pre className="output">{output}</pre>}
+      {showExplanation && <div className="explanation">{ex.explanation}</div>}
+
+      {/* Footer */}
       <div className="question-details-footer">
-        <button
-          className="btn"
-          disabled={selectedIndex === 0}
-          onClick={() => setSelectedIndex((i) => i - 1)}
-        >
-          ⬅ Previous
-        </button>
+        <div className="nav-buttons">
+          <button
+            className="btn"
+            disabled={selectedIndex === 0}
+            onClick={() => setSelectedIndex(selectedIndex - 1)}
+          >
+            ⬅ Previous
+          </button>
 
-        <button
-          className="btn"
-          disabled={selectedIndex === questionsList.length - 1}
-          onClick={() => setSelectedIndex((i) => i + 1)}
-        >
-          Next ➡
-        </button>
+          <button
+            className="btn"
+            disabled={selectedIndex === questions.length - 1}
+            onClick={() => setSelectedIndex(selectedIndex + 1)}
+          >
+            Next ➡
+          </button>
+        </div>
 
-        <button className="btn" onClick={() => setSelectedIndex(null)}>
-          Back
-        </button>
+
       </div>
     </div>
   );
 }
+

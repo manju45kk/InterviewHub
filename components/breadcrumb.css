@@ -1,0 +1,5 @@
+.breadcrumb{display:flex;align-items:center;font-size:14px;color:var(--text-color,#1329d2);}
+.crumb{display:inline-flex;align-items:center}
+.crumb.clickable{cursor:pointer;color:var(--link-color,#0366d6)}
+.crumb.active{font-weight:600}
+.sep{margin:0 8px;color:var(--muted,#645454)}

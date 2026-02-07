@@ -131,4 +131,136 @@ textarea::placeholder {
   .question-list li {
     font-size: 14px;
   }
+
+  .nav-buttons {
+
+  flex-wrap: nowrap;
+}
+.action-buttons {
+  flex-wrap: nowrap;
+}
+}
+
+
+.question-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* =========================
+   Row layout
+========================= */
+.question-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+/* =========================
+   Title
+========================= */
+.question-title {
+  flex: 1;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* =========================
+   Link-style action
+========================= */
+.toggle-link {
+  font-size: 14px;
+  color: var(--btn-bg);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.toggle-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* =========================
+   Answer panel
+========================= */
+.panel-answer {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--hover);
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+  border-radius: 5px;
+}
+
+
+/* List base */
+.question-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.question-list li {
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+/* Row layout */
+.question-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Question text */
+.question-list-main {
+  flex: 1;
+  font-size: 15px;
+}
+
+/* Action area aligned to end */
+.question-list-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Show / Hide as link */
+.answer-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  cursor: pointer;
+  color: #2563eb; /* blue */
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+/* Hover */
+.answer-link:hover {
+  color: #1d4ed8;
+}
+
+/* Active state */
+.answer-link.active {
+  color: #1e40af;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Answer card */
+.inline-explanation {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+ color: var(--text);
 }
