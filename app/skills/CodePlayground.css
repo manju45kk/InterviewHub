@@ -68,17 +68,7 @@ textarea::placeholder {
   font-family: monospace;
 }
 
-/* =========================
-   Explanation
-========================= */
-.explanation {
-  background: var(--surface);
-  color: #22c55e;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-}
+
 
 /* =========================
    Footer
@@ -215,8 +205,7 @@ textarea::placeholder {
 .question-list-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+   gap: 12px;
 }
 
 /* Question text */
@@ -263,4 +252,113 @@ textarea::placeholder {
   font-size: 14px;
   line-height: 1.6;
  color: var(--text);
+}
+
+
+/* =========================
+   CODE TEXTAREA
+========================= */
+
+.code-textarea {
+  width: 100%;
+  min-height: 260px;
+  padding: 16px;
+
+  background: #0f172a;
+  color: #e5e7eb;
+
+  font-family: "Fira Code", Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+
+  resize: vertical;
+  outline: none;
+
+  white-space: pre;      /* 🔥 THIS FIXES COMPRESSED CODE */
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+.code-textarea:focus {
+  border-color: #38bdf8;
+}
+
+/* =========================
+   OUTPUT
+========================= */
+
+.output {
+  background: #020617;
+  color: #22c55e;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+  white-space: pre-wrap;
+}
+
+/* =========================
+   EXPLANATION
+========================= */
+
+.explanation,
+.inline-explanation {
+  background: var(--surface);
+  color: var(--text);
+  padding: 14px;
+  border-radius: 8px;
+  line-height: 1.7;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+/* =========================
+   LIST VIEW
+========================= */
+
+.question-list {
+  list-style: none;
+  padding: 0;
+}
+
+.question-list li {
+  padding: 12px;
+   cursor: pointer;
+}
+
+.question-list-row {
+  display: flex;
+  align-items: center;
+}
+
+.answer-link {
+  font-size: 12px;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.question-details-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+  .code-textarea {
+    font-size: 13px;
+    min-height: 220px;
+  }
 }

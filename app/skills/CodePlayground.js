@@ -9,23 +9,46 @@ export function CodePlayground({ questionsList }) {
   const [showExplanation, setShowExplanation] = useState(false);
   const [shownAnswersMap, setShownAnswersMap] = useState({});
 
-  useEffect(() => {
-    if (questionsList) setQuestions(questionsList);
+  function formatCode(code) {
+  if (!code) return code;
+
+  return code
+    .replace(/;/g, ';\n')
+    .replace(/{/g, '{\n')
+    .replace(/}/g, '\n}\n')
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
+   useEffect(() => {
+    if (!questionsList) return;
+
+    // 🔥 FORMAT CODE HERE (ONLY ON LOAD)
+    const formatted = questionsList.map((q) => ({
+      ...q,
+      code: q.code ? formatCode(String(q.code)) : q.code,
+    }));
+
+    setQuestions(formatted);
   }, [questionsList]);
 
   useEffect(() => {
     if (selectedIndex === null) return;
+
     const ex = questions[selectedIndex];
     if (!ex) return;
+
     const isSingle = !!ex.issinglequestionanswer;
-    const hasCode = ex.code != null && String(ex.code).trim() !== "";
-    if (isSingle && !hasCode) setShowExplanation(true);
-    else setShowExplanation(false);
+    const hasCode = ex.code && ex.code.trim() !== "";
+
+    // Auto show explanation ONLY when single question without code
+    setShowExplanation(isSingle && !hasCode);
   }, [selectedIndex, questions]);
 
   const runCode = (code) => {
     let logs = "";
     const originalLog = console.log;
+
     try {
       console.log = (...args) => (logs += args.join(" ") + "\n");
       new Function(code)();
@@ -37,79 +60,75 @@ export function CodePlayground({ questionsList }) {
     }
   };
 
+  /* ================= LIST VIEW ================= */
   if (selectedIndex === null) {
     return (
-      <div>
-        <ul className="question-list">
-          {questions.map((ex, i) => (
-            <li key={i} onClick={() => setSelectedIndex(i)}>
-              <div className="question-list-row">
-                <div className="question-list-main">
-                  <strong>Q{i + 1}:</strong> {ex.title}
-                </div>
+      <ul className="question-list">
+        {questions.map((ex, i) => (
+          <li key={i} onClick={() => setSelectedIndex(i)}>
+            <div className="question-list-row">
+              <strong>Q{i + 1}:</strong> {ex.title}
 
-                {ex.issinglequestionanswer && (
-                  <div className="question-list-action">
-                    <button
-                      className={`answer-link ${shownAnswersMap[i] ? "active" : ""
-                        }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShownAnswersMap((m) => ({ ...m, [i]: !m[i] }));
-                      }}
-                    >
-                      {shownAnswersMap[i] ? "Hide Answer" : "Show Answer"}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {ex.issinglequestionanswer && shownAnswersMap[i] && (
-                <div className="inline-explanation">
-                  {ex.explanation}
-                </div>
+              {ex.issinglequestionanswer && (
+                <button
+                  className="answer-link"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShownAnswersMap((m) => ({ ...m, [i]: !m[i] }));
+                  }}
+                >
+                 {shownAnswersMap[i] ? "🙈" : "👁️"}
+                </button>
               )}
-            </li>
-          ))}
-        </ul>
-      </div>
+            </div>
 
+            {ex.issinglequestionanswer && shownAnswersMap[i] && (
+              <div
+                className="inline-explanation"
+                dangerouslySetInnerHTML={{ __html: ex.explanation }}
+              />
+            )}
+          </li>
+        ))}
+      </ul>
     );
   }
 
+  /* ================= DETAIL VIEW ================= */
   const ex = questions[selectedIndex];
-  const isSingle = !!ex.issinglequestionanswer;
-
-  const hasCode = ex.code != null && String(ex.code).trim() !== "";
-
-  console.log("hasCode", hasCode)
+  const hasCode = ex.code && ex.code.trim() !== "";
 
   return (
-    <div>
-      {/* Header */}
-      <div className="question-details-header">
-        <h3>
-          Q{selectedIndex + 1}: {ex.title}
-        </h3>
+    <div className="question-detail">
+      <h3>
+        Q{selectedIndex + 1}: {ex.title}
+      </h3>
 
-
-      </div>
-
-      {hasCode &&
+      {/* ✅ EDITABLE & READABLE CODE */}
+      {hasCode && (
         <textarea
+          className="code-textarea"
           value={ex.code}
+          spellCheck={false}
+          wrap="off"
           onChange={(e) => {
             const updated = [...questions];
             updated[selectedIndex].code = e.target.value;
             setQuestions(updated);
           }}
         />
-      }
+      )}
 
       {output && <pre className="output">{output}</pre>}
-      {showExplanation && <div className="explanation">{ex.explanation}</div>}
 
-      {/* Footer */}
+      {showExplanation && (
+        <div
+          className="explanation"
+          dangerouslySetInnerHTML={{ __html: ex.explanation }}
+        />
+      )}
+
+   
       <div className="question-details-footer">
         <div className="nav-buttons">
           <button
@@ -146,4 +165,3 @@ export function CodePlayground({ questionsList }) {
     </div>
   );
 }
-
