@@ -7,14 +7,18 @@ import type { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
 declare module "next-auth" {
+  /* Add properties to the User object returned by authorize() */
+  interface User {
+    id?: string;
+    username?: string;
+    role?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+
   interface Session {
-    user: {
-      id?: string;
-      username?: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
+    user: User;
   }
 }
 
@@ -22,6 +26,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     username?: string;
+    role?: string;
   }
 }
 
