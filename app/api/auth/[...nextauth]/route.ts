@@ -1,16 +1,103 @@
 // /app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { sql } from "@/lib/db";
+import type { JWT } from "next-auth/jwt";
+import type { Session } from "next-auth";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id?: string;
+      username?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    username?: string;
+  }
+}
 
 const handler = NextAuth({
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        try {
+          if (!credentials?.username || !credentials?.password) {
+            throw new Error("Invalid credentials");
+          }
+
+          const users = await sql`
+            SELECT id, username, email, password 
+            FROM users
+            WHERE username = ${credentials.username}
+          `;
+
+          if (users.length === 0) {
+            throw new Error("User not found");
+          }
+
+          const user = users[0];
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            throw new Error("Invalid password");
+          }
+
+          return {
+            id: user.id.toString(),
+            username: user.username,
+            email: user.email,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
+        }
+      },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  // Optional: session/jwt/database callbacks etc.
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 10 * 60, // 10 minutes in seconds
+  },
+  jwt: {
+    maxAge: 10 * 60, // 10 minutes in seconds
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.username = user.username;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.username = token.username;
+      }
+      return session;
+    },
+  },
 });
 
 export { handler as GET, handler as POST };

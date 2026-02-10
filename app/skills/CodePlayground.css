@@ -204,7 +204,7 @@ textarea::placeholder {
 /* Row layout */
 .question-list-row {
   display: flex;
-  align-items: center;
+  align-items: start;
    gap: 12px;
 }
 
@@ -330,7 +330,7 @@ textarea::placeholder {
 
 .question-list-row {
   display: flex;
-  align-items: center;
+  align-items: start;
 }
 
 .answer-link {

@@ -10,15 +10,53 @@ export function CodePlayground({ questionsList }) {
   const [shownAnswersMap, setShownAnswersMap] = useState({});
 
   function formatCode(code) {
-  if (!code) return code;
+    if (!code) return code;
 
-  return code
-    .replace(/;/g, ';\n')
-    .replace(/{/g, '{\n')
-    .replace(/}/g, '\n}\n')
-    .replace(/\n\s*\n/g, '\n')
-    .trim();
-}
+    let formatted = "";
+    let indentLevel = 0;
+    const indentStr = "  "; // 2 spaces per indent
+    let lineContent = "";
+
+    // Normalize whitespace
+    code = code.replace(/\s+/g, " ");
+
+    for (let i = 0; i < code.length; i++) {
+      const char = code[i];
+
+      if (char === "{") {
+        lineContent = lineContent.trim();
+        if (lineContent) {
+          formatted += indentStr.repeat(indentLevel) + lineContent + " {\n";
+        } else {
+          formatted += "{\n";
+        }
+        indentLevel++;
+        lineContent = "";
+      } else if (char === "}") {
+        if (lineContent.trim()) {
+          formatted += indentStr.repeat(indentLevel) + lineContent.trim() + ";\n";
+        }
+        indentLevel = Math.max(0, indentLevel - 1);
+        formatted += indentStr.repeat(indentLevel) + "}\n";
+        lineContent = "";
+      } else if (char === ";") {
+        lineContent = lineContent.trim();
+        if (lineContent) {
+          formatted += indentStr.repeat(indentLevel) + lineContent + ";\n";
+        }
+        lineContent = "";
+      } else {
+        lineContent += char;
+      }
+    }
+
+    // Handle any remaining content
+    if (lineContent.trim()) {
+      formatted += indentStr.repeat(indentLevel) + lineContent.trim();
+    }
+
+    return formatted.trim();
+  }
 
    useEffect(() => {
     if (!questionsList) return;
@@ -51,8 +89,16 @@ export function CodePlayground({ questionsList }) {
 
     try {
       console.log = (...args) => (logs += args.join(" ") + "\n");
-      new Function(code)();
-      setOutput(logs || "✅ Code executed with no output.");
+      const result = new Function(code)();
+      
+      // Show console output if available, otherwise show success or result
+      if (logs) {
+        setOutput(logs);
+      } else if (result !== undefined) {
+        setOutput(String(result));
+      } else {
+        setOutput("✅ Code executed successfully.");
+      }
     } catch (e) {
       setOutput("❌ Error: " + e.message);
     } finally {
@@ -79,6 +125,7 @@ export function CodePlayground({ questionsList }) {
                 >
                  {shownAnswersMap[i] ? "🙈" : "👁️"}
                 </button>
+                
               )}
             </div>
 
@@ -115,6 +162,7 @@ export function CodePlayground({ questionsList }) {
             const updated = [...questions];
             updated[selectedIndex].code = e.target.value;
             setQuestions(updated);
+            setOutput(""); // Clear output when code changes
           }}
         />
       )}
@@ -134,7 +182,10 @@ export function CodePlayground({ questionsList }) {
           <button
             className="btn"
             disabled={selectedIndex === 0}
-            onClick={() => setSelectedIndex(selectedIndex - 1)}
+            onClick={() => {
+              setSelectedIndex(selectedIndex - 1);
+              setOutput(""); // Clear output when navigating
+            }}
           >
             ⬅ Previous
           </button>
@@ -142,7 +193,10 @@ export function CodePlayground({ questionsList }) {
           <button
             className="btn"
             disabled={selectedIndex === questions.length - 1}
-            onClick={() => setSelectedIndex(selectedIndex + 1)}
+            onClick={() => {
+              setSelectedIndex(selectedIndex + 1);
+              setOutput(""); // Clear output when navigating
+            }}
           >
             Next ➡
           </button>

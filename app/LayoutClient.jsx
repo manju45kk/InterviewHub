@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SessionProvider } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import ToastProvider from "./ToastProvider";
 
-export default function LayoutClient({ children }) {
+function LayoutContent({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState("light");
+  const { data: session } = useSession();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
-     document.body.classList.remove("light", "dark");
+    document.body.classList.remove("light", "dark");
     document.body.classList.add(savedTheme);
   }, []);
 
@@ -21,6 +24,12 @@ export default function LayoutClient({ children }) {
     document.body.classList.add(newTheme);
     localStorage.setItem("theme", newTheme);
   };
+
+  const handleLogout = async () => {
+    await signOut({ redirect: true, callbackUrl: "/login" });
+  };
+
+  const userInitial = session?.user?.username?.[0]?.toUpperCase() || "U";
 
   return (
     <div className="app">
@@ -40,8 +49,18 @@ export default function LayoutClient({ children }) {
           <button className="theme-btn" onClick={toggleTheme}>
             {theme === "light" ? "🌙" : "☀️"}
           </button>
-          <div className="profile-circle">M</div>
-          <span className="username">Manju</span>
+          <div className="profile-circle">{userInitial}</div>
+          <span className="username">{session?.user?.username || "Guest"}</span>
+          {session && (
+            <button
+              className="theme-btn"
+              onClick={handleLogout}
+              title="Logout"
+              style={{ fontSize: "18px" }}
+            >
+              🚪
+            </button>
+          )}
         </div>
       </div>
 
@@ -59,5 +78,13 @@ export default function LayoutClient({ children }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LayoutClient({ children }) {
+  return (
+    <SessionProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </SessionProvider>
   );
 }
