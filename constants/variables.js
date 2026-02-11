@@ -1,1 +1,1 @@
-export const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || "a0sdas123123trtertrtyertyertyerd";
+export const NEXTAUTH_SECRET = "a0sdas123123trtertrtyertyertyerd";
