@@ -3,8 +3,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
-import type { JWT } from "next-auth/jwt";
-import type { Session } from "next-auth";
+import { NEXTAUTH_SECRET } from "../../../../constants/variables";
 
 declare module "next-auth" {
   /* Add properties to the User object returned by authorize() */
@@ -76,7 +75,7 @@ const handler = NextAuth({
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
   },

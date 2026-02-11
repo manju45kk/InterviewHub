@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { NEXTAUTH_SECRET } from "./constants/variables";
 
 export async function middleware(req) {
   // Handle API routes CORS
@@ -35,7 +36,7 @@ export async function middleware(req) {
   // Get token for authentication
   const token = await getToken({
     req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: NEXTAUTH_SECRET,
   });
 
   // ✅ TEMPORARILY ALLOW /admin WITHOUT LOGIN
