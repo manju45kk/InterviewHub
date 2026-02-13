@@ -36,6 +36,12 @@ export default function AddQuestion() {
   const [messageUsers, setMessageUsers] = useState("");
 
   const concepts = form.skill ? SKILLS_DATA[form.skill] : [];
+  const [skillsList, setSkillsList] = useState([]);
+  const [conceptsList, setConceptsList] = useState([]);
+  const [questionsList, setQuestionsList] = useState([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState(null);
+  const [searchQuestion, setSearchQuestion] = useState("");
 
   const resetForm = () =>
     setForm({
@@ -128,6 +134,93 @@ export default function AddQuestion() {
 
     }
   };
+
+  /* ---------------- MANAGE QUESTIONS ---------------- */
+  const fetchSkills = async () => {
+    try {
+      const res = await fetch('/api/questions?type=skills');
+      const data = await res.json();
+      if (data?.success) setSkillsList(data.data || []);
+    } catch (err) {
+      console.error('Error fetching skills', err);
+    }
+  };
+
+  const fetchConcepts = async (skill) => {
+    if (!skill) return setConceptsList([]);
+    try {
+      const res = await fetch(`/api/questions?type=concepts&skill=${encodeURIComponent(skill)}`);
+      const data = await res.json();
+      if (data?.success) setConceptsList(data.data || []);
+    } catch (err) {
+      console.error('Error fetching concepts', err);
+    }
+  };
+
+  const fetchQuestions = async (skill, concept) => {
+    if (!skill || !concept) return setQuestionsList([]);
+    setLoadingQuestions(true);
+    try {
+      const res = await fetch(`/api/questions?type=questions&skill=${encodeURIComponent(skill)}&concept=${encodeURIComponent(concept)}`);
+      const data = await res.json();
+      if (data?.success) setQuestionsList(data.data || []);
+    } catch (err) {
+      console.error('Error fetching questions', err);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const handleDeleteQuestion = async (id) => {
+    if (!confirm('Delete this question?')) return;
+    try {
+      const res = await fetch(`/api/questions?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setQuestionsList(qs => qs.filter(q => q.id !== id));
+      } else {
+        alert(data.message || 'Delete failed');
+      }
+    } catch (err) {
+      console.error('Delete failed', err);
+    }
+  };
+
+  const handleStartEdit = (q) => {
+    setEditingQuestion({ ...q });
+  };
+
+  const handleCancelEdit = () => setEditingQuestion(null);
+
+  const handleSaveEdit = async () => {
+    try {
+      const res = await fetch('/api/questions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingQuestion),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setQuestionsList(qs => qs.map(q => q.id === editingQuestion.id ? editingQuestion : q));
+        setEditingQuestion(null);
+        alert('Question updated');
+      } else {
+        alert(data.message || 'Update failed');
+      }
+    } catch (err) {
+      console.error('Update failed', err);
+    }
+  };
+
+  useEffect(() => { fetchSkills(); }, []);
+
+  // Filter questions by search term
+  const filteredQuestionsList = questionsList.filter(q => {
+    const search = searchQuestion.toLowerCase();
+    return q.title.toLowerCase().includes(search) || 
+           q.concept.toLowerCase().includes(search) ||
+           q.skill.toLowerCase().includes(search);
+  });
 
   /* ================= USER MANAGEMENT ================= */
   const handleAddUser = async () => {
@@ -243,7 +336,162 @@ export default function AddQuestion() {
           <button className="btn" onClick={() => setSection("single")}>➕ Add Single Question</button>
           <button className="btn" onClick={() => setSection("bulk")}>⬆ Add Bulk Questions</button>
           <button className="btn" onClick={() => setSection("simple")}>✍ Add Simple Q&A</button>
+          <button className="btn" onClick={() => setSection("manage")}>🛠 Manage Questions</button>
           <button className="btn cancel-btn" onClick={() => setSection("dashboard")}>← Back</button>
+        </>
+      )}
+
+      {/* ================= MANAGE QUESTIONS ================= */}
+      {section === 'manage' && (
+        <>
+          <h2 className="form-title">Manage Questions</h2>
+
+          <div className="filter-bar">
+            <div className="filter-bar-group">
+              <select className="input" onChange={(e) => { setForm({ ...form, skill: e.target.value, concept: '' }); fetchConcepts(e.target.value); }} value={form.skill}>
+                <option value="">Select Skill</option>
+                {skillsList.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+
+              <select className="input" value={form.concept} disabled={!form.skill} onChange={(e) => { setForm({ ...form, concept: e.target.value }); }}>
+                <option value="">Select Concept</option>
+                {conceptsList.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <div className="filter-bar-group filter-actions">
+              <button className="btn" onClick={() => fetchQuestions(form.skill, form.concept)}>Load</button>
+              <button className="btn cancel-btn" onClick={() => setSection('questions')}>← Back</button>
+            </div>
+          </div>
+
+          {loadingQuestions ? <p>Loading...</p> : (
+            <div>
+              {questionsList.length === 0 ? <p>No questions</p> : (
+                <>
+                  {/* Search for loaded results */}
+                  <div style={{ marginBottom: 12 }}>
+                    <input
+                      className="input"
+                      type="text"
+                      placeholder="Search questions by title, skill, or concept..."
+                      value={searchQuestion}
+                      onChange={(e) => setSearchQuestion(e.target.value)}
+                    />
+                  </div>
+
+                  <table className="users-table">
+                    <thead>
+                      <tr><th>ID</th><th>Title</th><th>Code</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                      {filteredQuestionsList.map(q => (
+                        <tr key={q.id}>
+                          <td>{q.id}</td>
+                          <td>{q.title}</td>
+                          <td><pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0 }}>{q.code}</pre></td>
+                          <td>
+                            <button className="btn" onClick={() => handleStartEdit(q)}>Edit</button>
+                            <button className="btn cancel-btn" onClick={() => handleDeleteQuestion(q.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {/* Mobile card view for questions */}
+                  <div className="questions-card-view">
+                    {filteredQuestionsList.map((q) => (
+                      <div key={q.id} className="question-card">
+                        <div className="question-card-header">
+                          <div style={{ fontWeight: 700 }}>{q.title}</div>
+                          <div style={{ fontSize: 12, opacity: 0.8 }}>ID: {q.id}</div>
+                        </div>
+                        <div className="question-card-body">
+                          <div className="question-card-row">
+                            <strong>Code</strong>
+                            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0, fontSize: 12 }}>{q.code || '-'}</pre>
+                          </div>
+                          <div className="question-card-row">
+                            <strong>Explanation</strong>
+                            <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', fontSize: 13, lineHeight: 1.4 }}>{q.explanation || '-'}</div>
+                          </div>
+                          <div className="question-actions">
+                            <button className="btn" onClick={() => handleStartEdit(q)}>Edit</button>
+                            <button className="btn cancel-btn" onClick={() => handleDeleteQuestion(q.id)}>Delete</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Edit Modal */}
+          {editingQuestion && (
+            <div className="modal-overlay" onClick={() => handleCancelEdit()}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2>Edit Question {editingQuestion.id}</h2>
+                  <button className="modal-close-btn" onClick={handleCancelEdit}>×</button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Skill</label>
+                    <input
+                      className="input"
+                      value={editingQuestion.skill}
+                      onChange={(e) => setEditingQuestion({ ...editingQuestion, skill: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Concept</label>
+                    <input
+                      className="input"
+                      value={editingQuestion.concept}
+                      onChange={(e) => setEditingQuestion({ ...editingQuestion, concept: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Title</label>
+                    <input
+                      className="input"
+                      value={editingQuestion.title}
+                      onChange={(e) => setEditingQuestion({ ...editingQuestion, title: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Code</label>
+                    <textarea
+                      className="textarea code-area"
+                      value={editingQuestion.code}
+                      onChange={(e) => setEditingQuestion({ ...editingQuestion, code: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Explanation</label>
+                    <textarea
+                      className="textarea"
+                      value={editingQuestion.explanation}
+                      onChange={(e) => setEditingQuestion({ ...editingQuestion, explanation: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="button-row">
+                    <button className="btn add-btn" onClick={handleSaveEdit}>Save</button>
+                    <button className="btn cancel-btn" onClick={handleCancelEdit}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

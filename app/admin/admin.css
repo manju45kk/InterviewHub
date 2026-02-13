@@ -101,6 +101,11 @@ select {
   transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
 .input::placeholder,
 .textarea::placeholder {
   color: var(--muted-text);
@@ -116,8 +121,9 @@ select:focus {
 
 /* Code textarea */
 .code-area {
-  min-height: 260px;
+  min-height: 120px;
   font-family: monospace;
+  resize: vertical;
 }
 
 /* =========================
@@ -277,6 +283,154 @@ select:focus {
 }
 
 /* =========================
+   Questions Mobile Card View
+========================= */
+.questions-card-view {
+  display: none;
+  gap: 12px;
+}
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.question-card-header {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.question-card-body {
+  padding: 12px;
+}
+
+.question-card-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hover);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.question-card-row pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.question-card-row:last-of-type {
+  border-bottom: none;
+}
+
+.question-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.question-actions .btn {
+  flex: 1;
+}
+
+/* =========================
+   Filter Bar (Responsive)
+========================= */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-bar-group {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-actions {
+  flex: 0 1 auto;
+  min-width: auto;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--muted-text);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  color: var(--text);
+}
+
+/* =========================
    Messages
 ========================= */
 .message {
@@ -341,6 +495,32 @@ input[type="file"] {
   .users-card-view {
     display: flex;
     flex-direction: column;
+  }
+  .questions-card-view {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+  }
+
+  .filter-bar-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filter-bar-group:not(.filter-actions) .input {
+    width: 100%;
+  }
+
+  .filter-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .filter-actions .btn {
+    flex: 1;
   }
 }
 
