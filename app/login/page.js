@@ -17,17 +17,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      // Let NextAuth handle the redirect so cookies/session are set correctly
+      await signIn("credentials", {
         username,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: "/",
       });
-
-      if (result?.error) {
-        setError("Invalid username or password");
-      } else if (result?.ok) {
-        router.push("/");
-      }
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
