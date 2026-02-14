@@ -113,8 +113,6 @@ export function CodePlayground({ questionsList }) {
         {questions.map((ex, i) => (
           <li key={i} onClick={() => setSelectedIndex(i)}>
             <div className="question-list-row">
-              <strong>Q{i + 1}:</strong> {ex.title}
-
               {ex.issinglequestionanswer && (
                 <button
                   className="answer-link"
@@ -125,8 +123,10 @@ export function CodePlayground({ questionsList }) {
                 >
                  {shownAnswersMap[i] ? "🙈" : "👁️"}
                 </button>
-                
               )}
+              <div className="question-list-main">
+                <strong>Q{i + 1}:</strong> {ex.title}
+              </div>
             </div>
 
             {ex.issinglequestionanswer && shownAnswersMap[i] && (
@@ -147,9 +147,9 @@ export function CodePlayground({ questionsList }) {
 
   return (
     <div className="question-detail">
-      <h3>
+      <h4>
         Q{selectedIndex + 1}: {ex.title}
-      </h3>
+   </h4>
 
       {/* ✅ EDITABLE & READABLE CODE */}
       {hasCode && (

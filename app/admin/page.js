@@ -217,9 +217,9 @@ export default function AddQuestion() {
   // Filter questions by search term
   const filteredQuestionsList = questionsList.filter(q => {
     const search = searchQuestion.toLowerCase();
-    return q.title.toLowerCase().includes(search) || 
-           q.concept.toLowerCase().includes(search) ||
-           q.skill.toLowerCase().includes(search);
+    return q.title.toLowerCase().includes(search) ||
+      q.concept.toLowerCase().includes(search) ||
+      q.skill.toLowerCase().includes(search);
   });
 
   /* ================= USER MANAGEMENT ================= */
@@ -391,8 +391,10 @@ export default function AddQuestion() {
                           <td>{q.title}</td>
                           <td><pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0 }}>{q.code}</pre></td>
                           <td>
-                            <button className="btn" onClick={() => handleStartEdit(q)}>Edit</button>
-                            <button className="btn cancel-btn" onClick={() => handleDeleteQuestion(q.id)}>Delete</button>
+                            <div className="filter-bar-group filter-actions">
+                              <button className="btn" onClick={() => handleStartEdit(q)}>Edit</button>
+                              <button className="btn cancel-btn" onClick={() => handleDeleteQuestion(q.id)}>Delete</button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -466,20 +468,22 @@ export default function AddQuestion() {
                     />
                   </div>
 
-                  <div>
-                    <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Code</label>
-                    <textarea
-                      className="textarea code-area"
-                      value={editingQuestion.code}
-                      onChange={(e) => setEditingQuestion({ ...editingQuestion, code: e.target.value })}
-                    />
-                  </div>
+                  {editingQuestion.code && (
+                    <div>
+                      <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Code</label>
+                      <textarea
+                        className="textarea code-area"
+                        value={editingQuestion.code || ''}
+                        onChange={(e) => setEditingQuestion({ ...editingQuestion, code: e.target.value })}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label style={{ fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>Explanation</label>
                     <textarea
                       className="textarea"
-                      value={editingQuestion.explanation}
+                      value={editingQuestion.explanation || ''}
                       onChange={(e) => setEditingQuestion({ ...editingQuestion, explanation: e.target.value })}
                     />
                   </div>
