@@ -69,7 +69,6 @@ function LayoutContent({ children }) {
         <nav className={`sidebar ${menuOpen ? "open" : ""}`}>
           <Link href="/skills" className="nav-link">Skills</Link>
           <Link href="/settings" className="nav-link">Settings</Link>
-          <Link href="/myfiles" className="nav-link">📁 My Files</Link>
           {session?.user?.role === "admin" && (
             <Link href="/admin" className="nav-link">Admin</Link>
           )}

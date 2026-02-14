@@ -135,7 +135,7 @@ export default function MyFiles() {
 
       <div className="pdf-view">
         <iframe
-          src={`/uploads/${selectedFile.filename}#toolbar=1&navpanes=0&scrollbar=1`}
+          src={`/api/files?id=${selectedFile.id}`}
           title={selectedFile.originalname}
           className="pdf-iframe"
         />

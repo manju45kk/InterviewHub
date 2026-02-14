@@ -5,43 +5,50 @@ This guide will help you set up and use the new file management feature in Inter
 ## Features Added
 
 ✅ **Admin File Upload** - Upload PDF files from the admin dashboard  
-✅ **File List View** - View all uploaded files in a dedicated page  
-✅ **PDF Viewer** - View/read PDF files directly in the app  
-✅ **Dark Mode Support** - PDF viewer respects your theme preference  
-✅ **File Deletion** - Delete files from both admin and user views  
+✅ **File List View** - View all uploaded files inside Admin dashboard  
+✅ **PDF Viewer** - View/read PDF files directly in new window  
+✅ **Dark Mode Support** - Works with your theme preference  
+✅ **File Deletion** - Delete files from admin panel  
+✅ **Vercel Compatible** - Files stored in database (not filesystem)  
 ✅ **Responsive Design** - Works perfectly on desktop, tablet, and mobile  
 
 ---
 
 ## Setup Steps
 
-### 1. Create Database Table
+### 1. Update Database Table
 
 Run the SQL commands from `FILE_MANAGEMENT_SETUP.sql` in your Neon database:
 
+**If creating new table:**
 ```sql
 CREATE TABLE IF NOT EXISTS files (
   id SERIAL PRIMARY KEY,
   filename VARCHAR(255) NOT NULL UNIQUE,
   originalname VARCHAR(255) NOT NULL,
+  filedata BYTEA NOT NULL,
   uploadedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   uploadedBy VARCHAR(100) DEFAULT 'admin',
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE INDEX IF NOT EXISTS idx_files_uploadedat ON files(uploadedAt DESC);
-CREATE INDEX IF NOT EXISTS idx_files_uploadedby ON files(uploadedBy);
 ```
 
-### 2. Create Upload Directory
+**If migrating from old table (add filedata column):**
+```sql
+ALTER TABLE files ADD COLUMN filedata BYTEA NOT NULL DEFAULT '';
+```
 
-The app will automatically create the `/public/uploads` directory when you upload the first file. No manual setup needed!
-
-### 3. Restart Your App
+### 2. Restart Your App
 
 ```bash
 npm run dev
 ```
+
+### 3. Test File Upload
+
+- Go to **Admin Dashboard** → **File Management**
+- Upload a PDF file (max 10MB)
+- Go to **My Files** to view it
 
 ---
 
@@ -52,46 +59,37 @@ npm run dev
 1. Go to **Admin Dashboard**
 2. Click on **File Management** card
 3. In the "Upload PDF File" section, click **Choose PDF File**
-4. Select a PDF file (max 50MB)
-5. Files appear instantly in the "Uploaded Files" list
+4. Select a PDF file (max 10MB)
+5. Files appear instantly in the list
 
-### For Users - Viewing Files
+### View Uploaded Files
 
-1. Click **My Files** in the sidebar
-2. You'll see all uploaded PDF files as cards
-3. Click on any file to view it
-4. Use the PDF toolbar to:
-   - Navigate pages
-   - Zoom in/out
-   - Search within PDF
-   - Save/print the PDF
+1. In Admin Dashboard, click **My Files** card
+2. You'll see all uploaded PDF files
+3. Click **👁️ View** to open any PDF in a new window
+4. Use browser's PDF toolbar to navigate, zoom, search, save
 
-### File Deletion
+### For Regular Users
 
-- **From Admin**: Go to File Management → Click 🗑️ Delete on any file
-- **From My Files**: Click 🗑️ Delete on the file card or in the PDF viewer
+- Regular users cannot access the admin panel
+- Only admins can manage files through the admin dashboard
 
 ---
 
 ## File Storage
 
-- **Location**: `/public/uploads/`
+- **Location**: Neon PostgreSQL Database
+- **Storage Method**: Base64 encoded BYTEA column
 - **File Format**: PDF only
-- **Max Size**: 50MB per file
-- **Access**: Direct download via `/uploads/[filename]`
+- **Max Size**: 100MB per file
+- **Access**: Via `/api/files?id={fileId}` endpoint
+- **Advantages**: Works on Vercel, no filesystem issues, scalable
 
 ---
 
 ## Dark Mode PDF Viewer
 
-The PDF viewer automatically applies a subtle inversion filter in dark mode to maintain readability while preserving colors. You can see this in:
-
-```css
-/* In CodePlayground.css */
-body.dark .pdf-iframe {
-  filter: invert(1) hue-rotate(180deg);
-}
-```
+PDFs open in your browser's native PDF viewer, which automatically adjusts to your system's dark mode settings. No special styling needed.
 
 ---
 
@@ -117,6 +115,13 @@ GET /api/files?action=list
   ]
 }
 ```
+
+### GET - Download/View File
+```
+GET /api/files?id=1
+```
+
+**Response:** PDF file as binary data with proper headers
 
 ### POST - Upload File
 ```
@@ -157,24 +162,28 @@ DELETE /api/files?id=1
 
 ## Troubleshooting
 
-### Issue: "Cannot POST /api/files"
-- Make sure Node.js runtime is enabled: `export const runtime = "nodejs";`
-- Restart your app: `npm run dev`
+### Issue: "Admin" link not showing in sidebar
+- Make sure your user account has `role: "admin"` in the database
+- Check that you're logged in
+- Verify the session data includes the role
 
-### Issue: File upload fails
-- Check file is a valid PDF
-- Verify file size is under 50MB
-- Check browser console for error messages
-- Ensure `/public/uploads` directory exists (will be created auto)
+### Issue: File upload fails on Vercel
+- ✅ Fixed! Files are now stored in the database, not the filesystem
+- Check max file size is under 10MB
+- Verify your database has the `filedata` column
 
-### Issue: PDF doesn't display
-- Browser might not support PDF iframe
-- Try downloading the PDF instead
-- Check CORS settings if using remote storage
+### Issue: "Cannot find column filedata"
+- Run the ALTER TABLE migration to add the column
+- Or delete and recreate the files table
 
-### Issue: Dark mode PDF looks strange
-- This is normal! The inversion filter preserves functionality
-- You can disable it by removing the filter from CSS if preferred
+### Issue: Cannot connect to database
+- Check your Neon DB connection string is correct
+- Verify `process.env.DATABASE_URL` is set
+- Test connection from your local machine first
+
+### Issue: Old files lost after migration
+- Old filesystem files are still in `/public/uploads` locally
+- You need to manually migrate them to database by re-uploading or converting them
 
 ---
 
@@ -182,16 +191,17 @@ DELETE /api/files?id=1
 
 ⚠️ **Current Implementation:**
 - Admin-only file uploads (controlled by session check)
-- Files stored in `/public/uploads` (publicly accessible)
-- No encryption or special security measures
+- Files stored in database with timestamp prefixes to prevent collisions
+- Base64 encoding prevents direct file access
+- Database access requires valid session
 
 💡 **Future Enhancements:**
 - User role-based access control
-- File encryption
-- Virus scanning (e.g., ClamAV)
-- Usage quotas per user
+- File permissions/sharing per user
+- Virus scanning before upload
+- Usage quotas per admin
 - File versioning/history
-- Document watermarking
+- Audit logging for file operations
 
 ---
 

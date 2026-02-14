@@ -415,6 +415,11 @@ export default function AddQuestion() {
               <h3>File Management</h3>
               <p>Upload and manage PDF files</p>
             </div>
+            <div className="dashboard-card" onClick={() => setSection("myfiles")}>
+              <div className="card-icon">📖</div>
+              <h3>My Files</h3>
+              <p>View all uploaded PDF files</p>
+            </div>
             <div className="dashboard-card" style={{ opacity: 0.5, cursor: "not-allowed" }}>
               <div className="card-icon">🔐</div>
               <h3>Roles</h3>
@@ -883,7 +888,7 @@ export default function AddQuestion() {
             )}
 
             <p className="file-help-text">
-              Max file size: 50MB. Only PDF files are allowed.
+              Max file size: 100MB. Only PDF files are allowed.
             </p>
           </div>
 
@@ -920,6 +925,48 @@ export default function AddQuestion() {
               </div>
             )}
           </div>
+
+          <div className="button-row">
+            <button className="btn cancel-btn" onClick={() => setSection("dashboard")}>← Back to Dashboard</button>
+          </div>
+        </>
+      )}
+
+      {/* ================= MY FILES VIEW ================= */}
+      {section === "myfiles" && (
+        <>
+          <h2 className="form-title">📖 My Files</h2>
+
+          {loadingFiles && <p className="loading-text">Loading files...</p>}
+
+          {!loadingFiles && files.length === 0 && (
+            <p className="empty-text">No files uploaded yet. Go to File Management to upload.</p>
+          )}
+
+          {!loadingFiles && files.length > 0 && (
+            <div className="files-list">
+              {files.map((file) => (
+                <div key={file.id} className="file-item">
+                  <div className="file-item-icon">📄</div>
+                  <div className="file-item-info">
+                    <p className="file-item-name">{file.originalname}</p>
+                    <p className="file-item-date">
+                      Uploaded: {new Date(file.uploadedat).toLocaleString()}
+                    </p>
+                  </div>
+                  <a
+                    href={`/api/files?id=${file.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn view-btn"
+                    title="View file"
+                  >
+                    👁️ View
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="button-row">
             <button className="btn cancel-btn" onClick={() => setSection("dashboard")}>← Back to Dashboard</button>

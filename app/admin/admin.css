@@ -675,6 +675,23 @@ input[type="file"] {
   border-color: #ef4444;
 }
 
+.file-item .view-btn {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  padding: 6px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.file-item .view-btn:hover {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: #2563eb;
+}
+
 @media (max-width: 640px) {
   .file-upload-section,
   .files-list-section {

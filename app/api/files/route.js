@@ -1,20 +1,8 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { writeFile, unlink } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
 
-export const runtime = "nodejs";
-
-const FILES_DIR = join(process.cwd(), "public", "uploads");
-
-// Ensure uploads directory exists
-async function ensureUploadDir() {
-  if (!existsSync(FILES_DIR)) {
-    const { mkdir } = require("fs/promises");
-    await mkdir(FILES_DIR, { recursive: true });
-  }
-}
+// For Vercel: Store files in database as base64, not filesystem
+// This works on both local and Vercel deployments
 
 /* ================== GET (LIST FILES) ================== */
 export async function GET(req) {
@@ -35,6 +23,32 @@ export async function GET(req) {
       });
     }
 
+    // Get file content
+    const fileId = searchParams.get("id");
+    if (fileId) {
+      const rows = await sql`
+        SELECT id, filename, originalname, filedata, uploadedat
+        FROM files
+        WHERE id = ${fileId}
+      `;
+
+      if (rows.length === 0) {
+        return NextResponse.json(
+          { success: false, message: "File not found" },
+          { status: 404 }
+        );
+      }
+
+      const file = rows[0];
+      
+      return new NextResponse(Buffer.from(file.filedata, "base64"), {
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${file.originalname}"`,
+        },
+      });
+    }
+
     return NextResponse.json(
       { success: false, message: "Invalid action" },
       { status: 400 }
@@ -51,8 +65,6 @@ export async function GET(req) {
 /* ================== POST (UPLOAD FILE) ================== */
 export async function POST(req) {
   try {
-    await ensureUploadDir();
-
     const formData = await req.formData();
     const file = formData.get("file");
     const uploadedBy = formData.get("uploadedBy") || "admin";
@@ -72,11 +84,11 @@ export async function POST(req) {
       );
     }
 
-    // Validate file size (max 50MB)
-    const MAX_SIZE = 50 * 1024 * 1024;
+    // Validate file size (max 100MB for database storage on Vercel)
+    const MAX_SIZE = 100 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { success: false, message: "File size exceeds 50MB limit" },
+        { success: false, message: "File size exceeds 100MB limit" },
         { status: 400 }
       );
     }
@@ -84,16 +96,15 @@ export async function POST(req) {
     const originalName = file.name;
     const timestamp = Date.now();
     const filename = `${timestamp}-${originalName}`;
-    const filepath = join(FILES_DIR, filename);
 
-    // Save file to disk
+    // Convert file to base64 for database storage
     const bytes = await file.arrayBuffer();
-    await writeFile(filepath, Buffer.from(bytes));
+    const base64 = Buffer.from(bytes).toString("base64");
 
-    // Save file info to database
+    // Save file info to database with base64 data
     await sql`
-      INSERT INTO files (filename, originalname, uploadedAt, uploadedBy)
-      VALUES (${filename}, ${originalName}, NOW(), ${uploadedBy})
+      INSERT INTO files (filename, originalname, filedata, uploadedAt, uploadedBy)
+      VALUES (${filename}, ${originalName}, ${base64}, NOW(), ${uploadedBy})
     `;
 
     return NextResponse.json({
@@ -137,17 +148,6 @@ export async function DELETE(req) {
         { success: false, message: "File not found" },
         { status: 404 }
       );
-    }
-
-    const filename = rows[0].filename;
-    const filepath = join(FILES_DIR, filename);
-
-    // Delete file from disk
-    try {
-      await unlink(filepath);
-    } catch (err) {
-      console.error("Failed to delete file from disk:", err);
-      // Continue with database deletion anyway
     }
 
     // Delete from database
