@@ -43,6 +43,12 @@ export default function AddQuestion() {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [searchQuestion, setSearchQuestion] = useState("");
 
+  // File management state
+  const [files, setFiles] = useState([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [messageFiles, setMessageFiles] = useState("");
+
   const resetForm = () =>
     setForm({
       skill: "",
@@ -74,10 +80,105 @@ export default function AddQuestion() {
     }
   };
 
+  // Fetch files
+  const fetchFiles = async () => {
+    setLoadingFiles(true);
+    try {
+      const res = await fetch("/api/files?action=list");
+      const data = await res.json();
+      if (data.success) {
+        setFiles(data.data || []);
+      } else {
+        setMessageFiles("Failed to fetch files");
+      }
+    } catch (err) {
+      console.error("Error fetching files:", err);
+      setMessageFiles(err.message);
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setMessageFiles("❌ Only PDF files are allowed");
+      return;
+    }
+
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      setMessageFiles("❌ File size exceeds 50MB limit");
+      return;
+    }
+
+    setUploading(true);
+    setMessageFiles("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("uploadedBy", "admin");
+
+      const res = await fetch("/api/files", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setMessageFiles("✅ File uploaded successfully!");
+        await fetchFiles(); // Refresh file list
+        e.target.value = ""; // Reset input
+      } else {
+        setMessageFiles(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      setMessageFiles(`❌ Error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Delete file
+  const handleDeleteFile = async (fileId) => {
+    if (!window.confirm("Are you sure you want to delete this file?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/files?id=${fileId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setMessageFiles("✅ File deleted successfully!");
+        await fetchFiles(); // Refresh file list
+      } else {
+        setMessageFiles(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      setMessageFiles(`❌ Error: ${err.message}`);
+    }
+  };
+
   // Load users when users section is opened
   useEffect(() => {
     if (section === "users") {
       fetchAuthUsers();
+    }
+  }, [section]);
+
+  // Load files when files section is opened
+  useEffect(() => {
+    if (section === "files") {
+      fetchFiles();
     }
   }, [section]);
 
@@ -308,6 +409,11 @@ export default function AddQuestion() {
               <div className="card-icon">📚</div>
               <h3>Questions</h3>
               <p>Manage interview questions</p>
+            </div>
+            <div className="dashboard-card" onClick={() => setSection("files")}>
+              <div className="card-icon">📁</div>
+              <h3>File Management</h3>
+              <p>Upload and manage PDF files</p>
             </div>
             <div className="dashboard-card" style={{ opacity: 0.5, cursor: "not-allowed" }}>
               <div className="card-icon">🔐</div>
@@ -744,6 +850,79 @@ export default function AddQuestion() {
               {loadingUsers ? "Adding..." : "Add User"}
             </button>
             <button className="btn cancel-btn" onClick={() => setSection("users")}>← Back</button>
+          </div>
+        </>
+      )}
+
+      {/* ================= FILE MANAGEMENT ================= */}
+      {section === "files" && (
+        <>
+          <h2 className="form-title">📁 File Management</h2>
+
+          {/* Upload Section */}
+          <div className="file-upload-section">
+            <h3>Upload PDF File</h3>
+            <div className="file-input-wrapper">
+              <input
+                type="file"
+                id="file-input"
+                accept=".pdf"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="file-input"
+              />
+              <label htmlFor="file-input" className={`file-input-label ${uploading ? "disabled" : ""}`}>
+                {uploading ? "📤 Uploading..." : "📁 Choose PDF File"}
+              </label>
+            </div>
+
+            {messageFiles && (
+              <div className={`message ${messageFiles.includes("✅") ? "success" : "error"}`}>
+                {messageFiles}
+              </div>
+            )}
+
+            <p className="file-help-text">
+              Max file size: 50MB. Only PDF files are allowed.
+            </p>
+          </div>
+
+          {/* Files List Section */}
+          <div className="files-list-section">
+            <h3>Uploaded Files</h3>
+
+            {loadingFiles && <p className="loading-text">Loading files...</p>}
+
+            {!loadingFiles && files.length === 0 && (
+              <p className="empty-text">No files uploaded yet.</p>
+            )}
+
+            {!loadingFiles && files.length > 0 && (
+              <div className="files-list">
+                {files.map((file) => (
+                  <div key={file.id} className="file-item">
+                    <div className="file-item-icon">📄</div>
+                    <div className="file-item-info">
+                      <p className="file-item-name">{file.originalname}</p>
+                      <p className="file-item-date">
+                        Uploaded: {new Date(file.uploadedat).toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      className="btn delete-btn"
+                      onClick={() => handleDeleteFile(file.id)}
+                      title="Delete file"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="button-row">
+            <button className="btn cancel-btn" onClick={() => setSection("dashboard")}>← Back to Dashboard</button>
           </div>
         </>
       )}

@@ -1,0 +1,319 @@
+/* =============================================
+   MY FILES PAGE STYLES
+============================================= */
+
+.myfiles-container {
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.myfiles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.myfiles-header h1 {
+  font-size: 28px;
+  margin: 0;
+  color: var(--text);
+}
+
+.back-btn {
+  padding: 8px 16px;
+  background: var(--border);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.back-btn:hover {
+  background: var(--hover);
+  transform: translateX(-2px);
+}
+
+.loading,
+.empty-state,
+.error-message {
+  text-align: center;
+  padding: 40px 20px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.empty-state p,
+.loading {
+  color: var(--muted-text);
+  font-size: 16px;
+}
+
+/* =============================================
+   FILES GRID
+============================================= */
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.file-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.file-card:hover {
+  background: var(--hover);
+  border-color: var(--text);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.file-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.file-info {
+  text-align: center;
+  width: 100%;
+  flex: 1;
+}
+
+.file-name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  word-break: break-word;
+  color: var(--text);
+  max-height: 3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.file-date {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: var(--muted-text);
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================================
+   PDF VIEWER
+============================================= */
+
+.pdf-viewer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pdf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  margin: -20px -20px 0 -20px;
+}
+
+.pdf-header h2 {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  word-break: break-word;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.pdf-view {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 20px 0;
+  min-height: 600px;
+}
+
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 600px;
+}
+
+.pdf-footer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: center;
+  margin-top: 0;
+  color: var(--muted-text);
+  font-size: 14px;
+}
+
+.pdf-footer p {
+  margin: 0;
+}
+
+/* =============================================
+   BUTTON STYLES
+============================================= */
+
+.btn {
+  padding: 8px 16px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn:hover {
+  background: var(--hover);
+  border-color: var(--text);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* =============================================
+   RESPONSIVE
+============================================= */
+
+@media (max-width: 768px) {
+  .files-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .myfiles-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .myfiles-header h1 {
+    font-size: 22px;
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pdf-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pdf-header h2 {
+    width: 100%;
+  }
+
+  .pdf-header .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pdf-view {
+    min-height: 400px;
+  }
+
+  .pdf-iframe {
+    min-height: 400px;
+  }
+}
+
+/* =============================================
+   DARK MODE (inherited from body.dark)
+============================================= */
+
+body.dark .myfiles-container {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body.dark .file-card {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+body.dark .file-card:hover {
+  background: var(--hover);
+  border-color: var(--text);
+}
+
+body.dark .pdf-header,
+body.dark .pdf-footer {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+body.dark .pdf-view {
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+body.dark .pdf-iframe {
+  filter: invert(1) hue-rotate(180deg);
+}
