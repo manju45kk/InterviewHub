@@ -120,6 +120,15 @@
   -webkit-box-orient: vertical;
 }
 
+/* Ensure filenames render horizontally and truncate if too long */
+.file-name {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .file-date {
   margin: 8px 0 0 0;
   font-size: 12px;

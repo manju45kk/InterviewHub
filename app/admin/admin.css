@@ -654,6 +654,16 @@ input[type="file"] {
   word-break: break-word;
 }
 
+/* Force horizontal text for filenames to avoid unintended vertical rendering */
+.file-item-name {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 160px);
+}
+
 .file-item-date {
   margin: 0;
   font-size: 12px;

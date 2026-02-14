@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 
+// Ensure this runs on the Node runtime so Buffer and binary bodies work correctly
+export const runtime = "nodejs";
+
 // For Vercel: Store files in database as base64, not filesystem
 // This works on both local and Vercel deployments
 
@@ -40,11 +43,58 @@ export async function GET(req) {
       }
 
       const file = rows[0];
-      
-      return new NextResponse(Buffer.from(file.filedata, "base64"), {
+
+      // file.filedata may be returned as Buffer/Uint8Array or as a base64 string
+      let fileBuffer;
+      let dataType = typeof file.filedata;
+      try {
+        if (typeof file.filedata === "string") {
+          // stored as base64 string or hex - try base64 first
+          try {
+            fileBuffer = Buffer.from(file.filedata, "base64");
+            if (fileBuffer.length === 0) throw new Error("empty after base64");
+            dataType = "base64-string";
+          } catch (e) {
+            // fallback to binary string
+            fileBuffer = Buffer.from(file.filedata, "binary");
+            dataType = "binary-string";
+          }
+        } else if (file.filedata instanceof Uint8Array) {
+          fileBuffer = Buffer.from(file.filedata);
+          dataType = "uint8array";
+        } else if (Buffer.isBuffer(file.filedata)) {
+          fileBuffer = file.filedata;
+          dataType = "buffer";
+        } else {
+          // fallback: try to coerce
+          fileBuffer = Buffer.from(file.filedata || "", "binary");
+          dataType = typeof file.filedata;
+        }
+      } catch (err) {
+        console.error("Error converting filedata to buffer:", err);
+        return NextResponse.json({ success: false, message: "Failed to decode file data", error: err.message }, { status: 500 });
+      }
+
+      // Debug mode: give metadata instead of binary
+      if (searchParams.get("debug") === "1") {
+        const head = fileBuffer.slice(0, 16).toString("hex");
+        return NextResponse.json({
+          success: true,
+          id: file.id,
+          originalname: file.originalname,
+          uploadedat: file.uploadedat,
+          dataType,
+          bytes: fileBuffer.length,
+          headHex: head,
+        });
+      }
+
+      return new NextResponse(fileBuffer, {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `inline; filename="${file.originalname}"`,
+          "Content-Length": String(fileBuffer.length),
+          "Cache-Control": "public, max-age=3600",
         },
       });
     }
@@ -97,14 +147,14 @@ export async function POST(req) {
     const timestamp = Date.now();
     const filename = `${timestamp}-${originalName}`;
 
-    // Convert file to base64 for database storage
+    // Convert file to Buffer and store binary in DB
     const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
+    const buffer = Buffer.from(bytes);
 
-    // Save file info to database with base64 data
+    // Save file info to database with binary data
     await sql`
       INSERT INTO files (filename, originalname, filedata, uploadedAt, uploadedBy)
-      VALUES (${filename}, ${originalName}, ${base64}, NOW(), ${uploadedBy})
+      VALUES (${filename}, ${originalName}, ${buffer}, NOW(), ${uploadedBy})
     `;
 
     return NextResponse.json({
